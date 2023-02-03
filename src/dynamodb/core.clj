@@ -1,7 +1,62 @@
 (ns dynamodb.core
   "
   https://cloud.yandex.ru/docs/ydb/docapi/api-ref/actions/updateItem
-  https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.UpdateExpressions.html
+  https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations_Amazon_DynamoDB.html
+  https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_AttributeValue.html
+
+  BatchExecuteStatement
+  BatchGetItem
+  BatchWriteItem
+  CreateBackup
+  CreateGlobalTable
+  CreateTable
+  DeleteBackup
+  DeleteItem
+  DeleteTable
+  DescribeBackup
+  DescribeContinuousBackups
+  DescribeContributorInsights
+  DescribeEndpoints
+  DescribeExport
+  DescribeGlobalTable
+  DescribeGlobalTableSettings
+  DescribeImport
+  DescribeKinesisStreamingDestination
+  DescribeLimits
+  DescribeTable
+  DescribeTableReplicaAutoScaling
+  DescribeTimeToLive
+  DisableKinesisStreamingDestination
+  EnableKinesisStreamingDestination
+  ExecuteStatement
+  ExecuteTransaction
+  ExportTableToPointInTime
+  GetItem
+  ImportTable
+  ListBackups
+  ListContributorInsights
+  ListExports
+  ListGlobalTables
+  ListImports
+  ListTables
+  ListTagsOfResource
+  PutItem                                    +
+  Query
+  RestoreTableFromBackup
+  RestoreTableToPointInTime
+  Scan
+  TagResource
+  TransactGetItems
+  TransactWriteItems
+  UntagResource
+  UpdateContinuousBackups
+  UpdateContributorInsights
+  UpdateGlobalTable
+  UpdateGlobalTableSettings
+  UpdateItem
+  UpdateTable
+  UpdateTableReplicaAutoScaling
+  UpdateTimeToLive
   "
   (:require
    [cheshire.core :as json]
@@ -322,7 +377,6 @@
      (update response :Item item-decode))))
 
 
-#_
 (defn create-table
   "https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html"
   [client table]
@@ -339,20 +393,48 @@
                              {:AttributeName "user_id"
                               :KeyType "RANGE"}]
                  :TableName table
-                 :TableClass "STANDARD"}))
+                 :TableClass "STANDARD"
+
+                 :ProvisionedThroughput
+                 {:ReadCapacityUnits 9999
+                  :WriteCapacityUnits 9999}}))
 
 
 (defn put-item
+  "
+  https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
+  "
   ([client table item]
    (put-item client table item nil))
 
   ([client table item {:keys [return]}]
+
+   #_
+   {:foo/bar 1}
+
+   #_
+   {:TableName table
+    :ReturnValues "NONE / ALL_OLD"
+    :ExpressionAttributeNames {"#key" "foo/bar"}
+    :ExpressionAttributeValues {":val" {"S" "Hello"}}
+    :Item {"#key" ":val"}}
+
    (let [params
          (cond-> {:TableName table
                   :Item (item-encode item)}
 
            return
            (set-return-vals return))
+
+         params
+         {:TableName table
+          :ReturnValues "ALL_OLD" ;; NONE | ALL_OLD | UPDATED_OLD | ALL_NEW | UPDATED_NEW
+          ;; :ConditionExpression ":val = 42"
+          ;; :ExpressionAttributeNames {"#key" "foo/bar"}
+          ;; :ExpressionAttributeValues {":val" {"S" "Hello"}}
+          :Item {"chat_id" {"N" 3}
+                 "user_id" {"N" 5}
+                 "aaa" {"S" "AAA"}}}
 
          response
          (make-request client "PutItem" params)]
@@ -481,6 +563,11 @@
 
 #_
 (comment
+
+  (def -c (make-client "public-key"
+                       "secret-key"
+                       "http://localhost:8000/foo"
+                       "region"))
 
   (def -r (create-table -c "foobar"))
 
