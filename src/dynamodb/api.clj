@@ -6,6 +6,13 @@
    [dynamodb.encode :refer [encode-attrs]]))
 
 
+(defmacro as
+  {:style/indent 1}
+  [x [bind] & body]
+  `(let [~bind ~x]
+     ~@body))
+
+
 (defn make-client
   [access-key
    secret-key
@@ -32,21 +39,83 @@
      :region region}))
 
 
+
+(defn create-table
+  "https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html"
+
+  [client table attrs key-schema
+
+   {:keys [tags
+           billing-mode
+           table-class
+           GlobalSecondaryIndexes
+           LocalSecondaryIndexes
+           ProvisionedThroughput
+           SSESpecification
+           StreamSpecification]}]
+
+  (let [AttributeDefinitions
+        (for [[attr-name attr-type] attrs]
+          {:AttributeName attr-name
+           :AttributeType attr-type})
+
+        KeySchema
+        (for [[attr-name key-type] key-schema]
+          {:AttributeName attr-name
+           :KeyType key-type})
+
+        params
+        (cond-> {:AttributeDefinitions AttributeDefinitions
+                 :KeySchema KeySchema
+                 :TableName table}
+
+          billing-mode
+          (assoc :BillingMode billing-mode)
+
+          GlobalSecondaryIndexes
+          (assoc :GlobalSecondaryIndexes GlobalSecondaryIndexes)
+
+          LocalSecondaryIndexes
+          (assoc :LocalSecondaryIndexes LocalSecondaryIndexes)
+
+          ProvisionedThroughput
+          (assoc :ProvisionedThroughput ProvisionedThroughput)
+
+          SSESpecification
+          (assoc :SSESpecification SSESpecification)
+
+          StreamSpecification
+          (assoc :StreamSpecification StreamSpecification)
+
+          table-class
+          (assoc :TableClass table-class)
+
+          tags
+          (assoc :Tags (for [[tag-key tag-val] tags]
+                         {:Key tag-key
+                          :Value tag-val})))
+
+        response
+        (client/make-request client "CreateTable" params)]
+
+    response))
+
+
 (defn list-tables
   [client {:keys [ExclusiveStartTableName
-                  Limit]}]
+                  limit]}]
 
   (let [params
-         (cond-> {}
+        (cond-> {}
 
-           ExclusiveStartTableName
-           (assoc :ExclusiveStartTableName ExclusiveStartTableName)
+          ExclusiveStartTableName
+          (assoc :ExclusiveStartTableName ExclusiveStartTableName)
 
-           Limit
-           (assoc :Limit Limit))
+          limit
+          (assoc :Limit limit))
 
-         response
-         (client/make-request client "ListTables" params)]
+        response
+        (client/make-request client "ListTables" params)]
 
     response))
 
@@ -81,6 +150,12 @@
                        "abc"
                        "http://localhost:8000/foo"
                        "ru-central1"))
+
+  (create-table -c "FooBar"
+                [[:id :N]]
+                [[:id :HASH]]
+                nil
+                )
 
   (list-tables -c)
 
