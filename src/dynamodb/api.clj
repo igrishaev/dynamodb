@@ -32,6 +32,25 @@
      :region region}))
 
 
+(defn list-tables
+  [client {:keys [ExclusiveStartTableName
+                  Limit]}]
+
+  (let [params
+         (cond-> {}
+
+           ExclusiveStartTableName
+           (assoc :ExclusiveStartTableName ExclusiveStartTableName)
+
+           Limit
+           (assoc :Limit Limit))
+
+         response
+         (client/make-request client "ListTables" params)]
+
+    response))
+
+
 (defn put-item
   "
   https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
@@ -62,6 +81,8 @@
                        "abc"
                        "http://localhost:8000/foo"
                        "ru-central1"))
+
+  (list-tables -c)
 
   (put-item -c :foobar {:aaa 1 :bbb 2})
 
