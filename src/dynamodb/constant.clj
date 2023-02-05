@@ -1,5 +1,9 @@
 (ns dynamodb.constant)
 
+
+(def version-20120810
+  "20120810")
+
 (def billing-mode-provisioned
   "PROVISIONED")
 

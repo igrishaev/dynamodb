@@ -2,6 +2,7 @@
   (:import
    java.net.URI)
   (:require
+   [dynamodb.constant :as const]
    [dynamodb.client :as client]
    [dynamodb.encode :refer [encode-attrs]]))
 
@@ -14,29 +15,32 @@
 
 
 (defn make-client
-  [access-key
-   secret-key
-   endpoint
-   region]
 
-  (let [uri
-        (new URI endpoint)
+  ([access-key secret-key endpoint region]
+   (make-client access-key secret-key endpoint region nil))
 
-        host
-        (.getHost uri)
+  ([access-key secret-key endpoint region
+    {:keys [version]
+     :or {version const/version-20120810}}]
 
-        path
-        (.getPath uri)]
+   (let [uri
+         (new URI endpoint)
 
-    {:access-key access-key
-     :secret-key secret-key
-     :endpoint endpoint
-     :content-type "application/x-amz-json-1.0"
-     :host host
-     :path path
-     :service "dynamodb"
-     :version "20120810"
-     :region region}))
+         host
+         (.getHost uri)
+
+         path
+         (.getPath uri)]
+
+     {:access-key access-key
+      :secret-key secret-key
+      :endpoint endpoint
+      :content-type "application/x-amz-json-1.0"
+      :host host
+      :path path
+      :service "dynamodb"
+      :version version
+      :region region})))
 
 
 ;; GetItem
@@ -58,8 +62,7 @@
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html#DDB-DeleteTable-request-TableName
 (defn delete-table
   [client table]
-  (let [params
-        {:TableName table}]
+  (let [params {:TableName table}]
     (client/make-request client "DeleteTable" params)))
 
 
@@ -71,8 +74,8 @@
 
   ([client table attrs key-schema
     {:keys [tags
-            billing-mode
             table-class
+            billing-mode
             provisioned-throughput
             GlobalSecondaryIndexes
             LocalSecondaryIndexes
@@ -98,13 +101,21 @@
            (assoc :BillingMode billing-mode)
 
            provisioned-throughput
-           (as [params]
+           (as [params']
              (let [[read-units write-units]
                    provisioned-throughput]
-               (assoc params
+               (assoc params'
                       :ProvisionedThroughput
                       {:ReadCapacityUnits read-units
                        :WriteCapacityUnits write-units})))
+
+           table-class
+           (assoc :TableClass table-class)
+
+           tags
+           (assoc :Tags (for [[tag-key tag-val] tags]
+                          {:Key tag-key
+                           :Value tag-val}))
 
            SSESpecification
            (assoc :SSESpecification SSESpecification)
@@ -116,20 +127,9 @@
            (assoc :LocalSecondaryIndexes LocalSecondaryIndexes)
 
            StreamSpecification
-           (assoc :StreamSpecification StreamSpecification)
+           (assoc :StreamSpecification StreamSpecification))]
 
-           table-class
-           (assoc :TableClass table-class)
-
-           tags
-           (assoc :Tags (for [[tag-key tag-val] tags]
-                          {:Key tag-key
-                           :Value tag-val})))
-
-         response
-         (client/make-request client "CreateTable" params)]
-
-     response)))
+     (client/make-request client "CreateTable" params))))
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ListTables.html
