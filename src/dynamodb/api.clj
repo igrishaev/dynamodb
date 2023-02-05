@@ -5,6 +5,7 @@
    [dynamodb.util :refer [as]]
    [dynamodb.constant :as const]
    [dynamodb.client :as client]
+   [dynamodb.decode :refer [decode-attrs]]
    [dynamodb.encode :refer [encode-attrs]]))
 
 
@@ -198,12 +199,9 @@
          response
          (client/make-request client "PutItem" params)]
 
-     ;; if ok?
-
-     response
-
-     #_
-     (update response :Attributes item-decode))))
+     (if (:Attributes response)
+       (update response :Attributes decode-attrs)
+       response))))
 
 
 #_

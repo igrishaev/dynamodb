@@ -255,7 +255,8 @@
         (api/put-item CLIENT
                       table
                       {:user/id 1
-                       :user/name "Ivan"}
+                       :user/name "Ivan"
+                       :foo/extra [1 true nil "kek"]}
                       {:return-values const/return-values-none})
 
         resp2
@@ -268,6 +269,7 @@
     (is (= {} resp1))
 
     (is (= {:Attributes
-            {:user/id {:N "1"}
-             :user/name {:S "Ivan"}}}
+            {:user/id "1"
+             :user/name "Ivan"
+             :foo/extra ["1" true nil "kek"]}}
            resp2))))
