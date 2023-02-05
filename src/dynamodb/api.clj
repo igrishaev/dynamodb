@@ -58,6 +58,7 @@
 ;; UpdateItem
 
 
+;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html
 (defn create-table
 
@@ -124,6 +125,7 @@
      (client/make-request client "CreateTable" params))))
 
 
+;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html#DDB-DeleteTable-request-TableName
 (defn delete-table
   [client table]

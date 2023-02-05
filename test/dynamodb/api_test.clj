@@ -126,3 +126,43 @@
             :payload {:TableName table}
             :target "DeleteTable"}
            response))))
+
+
+(deftest test-api-delete-table
+
+  (let [table
+        (name (gensym "Table"))
+
+        resp1
+        (api/create-table CLIENT
+                          table
+                          {:user/id :N}
+                          {:user/id const/key-type-hash}
+                          {:billing-mode const/billing-mode-pay-per-request})
+
+        resp2
+        (api/delete-table CLIENT table)]
+
+    (is (= {:TableDescription
+            {:TableStatus "ACTIVE"
+             :ItemCount 0
+             :KeySchema [{:AttributeName "user/id" :KeyType "HASH"}]
+             :ProvisionedThroughput
+             {:LastIncreaseDateTime 0.0
+              :LastDecreaseDateTime 0.0
+              :NumberOfDecreasesToday 0
+              :ReadCapacityUnits 0
+              :WriteCapacityUnits 0}
+             :CreationDateTime nil
+             :TableName table
+             :AttributeDefinitions
+             [{:AttributeName "user/id" :AttributeType "N"}]
+             :TableArn (format "arn:aws:dynamodb:ddblocal:000000000000:table/%s" table)
+             :TableSizeBytes 0
+             :BillingModeSummary
+             {:BillingMode "PAY_PER_REQUEST"
+              :LastUpdateToPayPerRequestDateTime nil}}}
+
+           (-> resp2
+               (assoc-in [:TableDescription :BillingModeSummary :LastUpdateToPayPerRequestDateTime] nil)
+               (assoc-in [:TableDescription :CreationDateTime] nil))))))
