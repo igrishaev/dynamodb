@@ -269,7 +269,7 @@
     (is (= {} resp1))
 
     (is (= {:Attributes
-            {:user/id "1"
+            {:user/id 1
              :user/name "Ivan"
-             :foo/extra ["1" true nil "kek"]}}
+             :foo/extra [1 true nil "kek"]}}
            resp2))))

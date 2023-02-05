@@ -19,15 +19,18 @@
   (is (= #{"Snowy" "Rainy" "Sunny"}
          (decode {:BS ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]})))
 
-  (is (= ["Cookies" "Coffee" "3.14159"]
+  (is (= ["Cookies" "Coffee" 3.14159]
          (decode {:L [ {"S" "Cookies"} {"S" "Coffee"} {"N" "3.14159"}]})))
 
-  (is (= {"Name" "Joe" "Age" "35"}
+  (is (= {"Name" "Joe" "Age" 35}
          (decode {:M {"Name" {"S" "Joe"}
                       "Age" {"N" "35"}}})))
 
   (is (= -99.33
-         (decode {:N -99.33})))
+         (decode {:N "-99.33"})))
+
+  (is (= 1.1111111111111111E24
+         (decode {:N "1111111111111111111111111.1111111111111111111111111"})))
 
   (is (= #{"3.14" "7.5" "42.2" "-19"}
          (decode {:NS ["42.2", "-19", "7.5", "3.14"]})))

@@ -3,6 +3,7 @@
   https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_AttributeValue.html
   "
   (:require
+   [cheshire.core :as json]
    [dynamodb.util :as util]
    [dynamodb.codec :as codec]))
 
@@ -36,7 +37,7 @@
       (util/update-vals v decode)
 
       (:N "N") ;; "123.45"
-      v
+      (json/parse-string v)
 
       (:NS "NS") ;; ["42.2", "-19", "7.5", "3.14"]
       (set v)
