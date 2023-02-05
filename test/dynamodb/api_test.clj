@@ -108,3 +108,21 @@
            (-> response
                (assoc-in [:TableDescription :BillingModeSummary :LastUpdateToPayPerRequestDateTime] ::DUMMY)
                (assoc-in [:TableDescription :CreationDateTime] ::DUMMY))))))
+
+
+(deftest test-api-negative-response
+
+  (let [table
+        (name (gensym "Table"))
+
+        response
+        (api/delete-table CLIENT table)]
+
+    (is (= {:error? true
+            :status 400
+            :path "com.amazonaws.dynamodb.v20120810"
+            :exception "ResourceNotFoundException"
+            :message "Cannot do operations on a non-existent table"
+            :payload {:TableName table}
+            :target "DeleteTable"}
+           response))))

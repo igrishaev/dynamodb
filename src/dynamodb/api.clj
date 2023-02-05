@@ -58,14 +58,6 @@
 ;; UpdateItem
 
 
-
-;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html#DDB-DeleteTable-request-TableName
-(defn delete-table
-  [client table]
-  (let [params {:TableName table}]
-    (client/make-request client "DeleteTable" params)))
-
-
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html
 (defn create-table
 
@@ -130,6 +122,13 @@
            (assoc :StreamSpecification StreamSpecification))]
 
      (client/make-request client "CreateTable" params))))
+
+
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html#DDB-DeleteTable-request-TableName
+(defn delete-table
+  [client table]
+  (let [params {:TableName table}]
+    (client/make-request client "DeleteTable" params)))
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ListTables.html

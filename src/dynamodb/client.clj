@@ -1,26 +1,13 @@
 (ns dynamodb.client
   (:import
-   java.net.URI
-   java.io.InputStream)
+   java.net.URI)
   (:require
    [clojure.java.io :as io]
    [dynamodb.time :as time]
    [cheshire.core :as json]
    [clj-aws-sign.core :as aws-sign]
    ;; [clojure.string :as str]
-   [org.httpkit.client :as http])
-
-  )
-
-
-(defn stream? [x]
-  (instance? InputStream x))
-
-
-(defn parse-response
-  [{:keys [opts status ^InputStream body]}]
-  (with-open [r (io/reader body :encoding "UTF-8")]
-    (json/parse-stream r keyword)))
+   [org.httpkit.client :as http]))
 
 
 (defn make-request
@@ -72,9 +59,36 @@
          :headers headers
          :as :stream}
 
-        (http/request)
-        (deref)
-        (parse-response)
-        ;; (maybe-throw-response)
+        (http/request
 
-        )))
+         (fn [{:keys [status ^InputStream body]}]
+
+           (let [data-parsed
+                 (with-open [r (io/reader body :encoding "UTF-8")]
+                   (json/parse-stream r keyword))
+
+                 {:keys [__type
+                         Message]} data-parsed]
+
+             (if __type
+
+               (let [uri
+                     (new URI __type)
+
+                     exception
+                     (.getFragment uri)
+
+                     path
+                     (.getPath uri)]
+
+                 {:error? true
+                  :status status
+                  :path path
+                  :exception exception
+                  :message Message
+                  :payload data
+                  :target target})
+
+               data-parsed))))
+
+        (deref))))
