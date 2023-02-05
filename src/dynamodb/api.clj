@@ -166,35 +166,34 @@
   ([client table item]
    (put-item client table item nil))
 
-  ([client table item {:keys [ConditionExpression
-                              ExpressionAttributeNames
-                              ExpressionAttributeValues
-                              ReturnConsumedCapacity
-                              ReturnItemCollectionMetrics
-                              ReturnValues
-                              ]}]
+  ([client table item {:keys [condition-expression
+                              expression-attr-names
+                              expression-attr-values
+                              return-consumed-capacity
+                              return-item-collection-metrics
+                              return-values]}]
 
    (let [params
          (cond-> {:TableName table
                   :Item (encode-attrs item)}
 
-           ConditionExpression
-           (assoc :ConditionExpression ConditionExpression)
+           condition-expression
+           (assoc :ConditionExpression condition-expression)
 
-           ExpressionAttributeNames
-           (assoc :ExpressionAttributeNames ExpressionAttributeNames)
+           expression-attr-names
+           (assoc :ExpressionAttributeNames expression-attr-names)
 
-           ExpressionAttributeValues
-           (assoc :ExpressionAttributeValues ExpressionAttributeValues)
+           expression-attr-values
+           (assoc :ExpressionAttributeValues expression-attr-values)
 
-           ReturnConsumedCapacity
-           (assoc :ReturnConsumedCapacity ReturnConsumedCapacity)
+           return-consumed-capacity
+           (assoc :ReturnConsumedCapacity return-consumed-capacity)
 
-           ReturnItemCollectionMetrics
-           (assoc :ReturnItemCollectionMetrics ReturnItemCollectionMetrics)
+           return-item-collection-metrics
+           (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
 
-           ReturnValues
-           (assoc :ReturnValues ReturnValues))
+           return-values
+           (assoc :ReturnValues return-values))
 
          response
          (client/make-request client "PutItem" params)]

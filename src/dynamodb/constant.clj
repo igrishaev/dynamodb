@@ -21,3 +21,33 @@
 
 (def key-type-range
   "RANGE")
+
+(def return-consumed-capacity-indexes
+  "INDEXES")
+
+(def return-consumed-capacity-total
+  "TOTAL")
+
+(def return-consumed-capacity-none
+  "NONE")
+
+(def return-item-collection-metrics-size
+  "SIZE")
+
+(def return-item-collection-metrics-none
+  "NONE")
+
+(def return-values-none
+  "NONE")
+
+(def return-values-all-old
+  "ALL_OLD")
+
+(def return-values-updated-old
+  "UPDATED_OLD")
+
+(def return-values-all-new
+  "ALL_NEW")
+
+(def return-values-updated-new
+  "UPDATED_NEW")

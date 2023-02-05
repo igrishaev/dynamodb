@@ -241,3 +241,33 @@
            (-> response
                :Table
                (select-keys [:TableStatus :TableName]))))))
+
+
+(deftest test-put-item-ok
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        resp1
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"}
+                      {:return-values const/return-values-none})
+
+        resp2
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"}
+                      {:return-values const/return-values-all-old})]
+
+    (is (= {} resp1))
+
+    (is (= {:Attributes
+            {:user/id {:N "1"}
+             :user/name {:S "Ivan"}}}
+           resp2))))
