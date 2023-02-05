@@ -159,25 +159,49 @@
     (client/make-request client "DescribeTable" params)))
 
 
-
-
+;;
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
 (defn put-item
 
   ([client table item]
    (put-item client table item nil))
 
-  ([client table item {:keys [return]}]
+  ([client table item {:keys [ConditionExpression
+                              ExpressionAttributeNames
+                              ExpressionAttributeValues
+                              ReturnConsumedCapacity
+                              ReturnItemCollectionMetrics
+                              ReturnValues
+                              ]}]
 
    (let [params
          (cond-> {:TableName table
-                  :Item (encode-attrs item)})
+                  :Item (encode-attrs item)}
+
+           ConditionExpression
+           (assoc :ConditionExpression ConditionExpression)
+
+           ExpressionAttributeNames
+           (assoc :ExpressionAttributeNames ExpressionAttributeNames)
+
+           ExpressionAttributeValues
+           (assoc :ExpressionAttributeValues ExpressionAttributeValues)
+
+           ReturnConsumedCapacity
+           (assoc :ReturnConsumedCapacity ReturnConsumedCapacity)
+
+           ReturnItemCollectionMetrics
+           (assoc :ReturnItemCollectionMetrics ReturnItemCollectionMetrics)
+
+           ReturnValues
+           (assoc :ReturnValues ReturnValues))
 
          response
          (client/make-request client "PutItem" params)]
 
-     response
+     ;; if ok?
 
+     response
 
      #_
      (update response :Attributes item-decode))))
