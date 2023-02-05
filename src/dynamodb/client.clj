@@ -2,6 +2,7 @@
   (:import
    java.net.URI)
   (:require
+   [dynamodb.util :refer [as]]
    [clojure.java.io :as io]
    [dynamodb.time :as time]
    [cheshire.core :as json]
@@ -19,7 +20,8 @@
            endpoint
            content-type
            version
-           service]}
+           service
+           async?]}
    target
    data]
 
@@ -91,4 +93,7 @@
 
                data-parsed))))
 
-        (deref))))
+        (as [response]
+          (if async?
+            response
+            @response)))))

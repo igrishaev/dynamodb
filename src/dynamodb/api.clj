@@ -2,16 +2,10 @@
   (:import
    java.net.URI)
   (:require
+   [dynamodb.util :refer [as]]
    [dynamodb.constant :as const]
    [dynamodb.client :as client]
    [dynamodb.encode :refer [encode-attrs]]))
-
-
-(defmacro as
-  {:style/indent 1}
-  [x [bind] & body]
-  `(let [~bind ~x]
-     ~@body))
 
 
 (defn make-client
@@ -20,8 +14,10 @@
    (make-client access-key secret-key endpoint region nil))
 
   ([access-key secret-key endpoint region
-    {:keys [version]
-     :or {version const/version-20120810}}]
+    {:keys [async?
+            version]
+     :or {async? false
+          version const/version-20120810}}]
 
    (let [uri
          (new URI endpoint)
@@ -40,7 +36,8 @@
       :path path
       :service "dynamodb"
       :version version
-      :region region})))
+      :region region
+      :async? async?})))
 
 
 ;; GetItem
@@ -133,21 +130,28 @@
     (client/make-request client "DeleteTable" params)))
 
 
+;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ListTables.html
 (defn list-tables
-  [client {:keys [ExclusiveStartTableName
-                  limit]}]
 
-  (let [params
-        (cond-> {}
+  ([client]
+   (list-tables client nil))
 
-          ExclusiveStartTableName
-          (assoc :ExclusiveStartTableName ExclusiveStartTableName)
+  ([client {:keys [limit
+                   last-table]}]
+   (let [params
+         (cond-> {}
 
-          limit
-          (assoc :Limit limit))]
+           last-table
+           (assoc :ExclusiveStartTableName last-table)
 
-    (client/make-request client "ListTables" params)))
+           limit
+           (assoc :Limit limit))]
+
+     (client/make-request client "ListTables" params))))
+
+
+;; describe table
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
@@ -178,7 +182,8 @@
   (def -c (make-client "123"
                        "abc"
                        "http://localhost:8000/foo"
-                       "ru-central1"))
+                       "ru-central1"
+                       {:async? true}))
 
   (create-table -c "FooBar"
                 [[:id :N]]

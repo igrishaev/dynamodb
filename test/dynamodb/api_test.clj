@@ -12,6 +12,18 @@
                    (format "http://localhost:%s/foo" PORT)
                    "voronezh"))
 
+(defn make-table-name []
+  (name (gensym "Table")))
+
+(defn make-tmp-table [table]
+  (api/create-table CLIENT
+                    table
+                    {:user/id :N
+                     :user/name :S}
+                    {:user/id const/key-type-hash
+                     :user/name const/key-type-range}
+                    {:billing-mode const/billing-mode-pay-per-request}))
+
 
 (deftest test-client-ok
   (is (= {:path "/foo"
@@ -22,7 +34,8 @@
           :host "localhost"
           :content-type "application/x-amz-json-1.0"
           :version "20120810"
-          :endpoint "http://localhost:8000/foo"}
+          :endpoint "http://localhost:8000/foo"
+          :async? false}
          CLIENT)))
 
 
@@ -166,3 +179,45 @@
            (-> resp2
                (assoc-in [:TableDescription :BillingModeSummary :LastUpdateToPayPerRequestDateTime] nil)
                (assoc-in [:TableDescription :CreationDateTime] nil))))))
+
+
+(deftest test-api-list-tables
+
+  (let [tab1
+        (make-table-name)
+
+        tab2
+        (make-table-name)
+
+        tab3
+        (make-table-name)
+
+        _
+        (make-tmp-table tab1)
+
+        _
+        (make-tmp-table tab2)
+
+        _
+        (make-tmp-table tab3)
+
+        resp1
+        (api/list-tables CLIENT {:limit 1})
+
+        {:keys [LastEvaluatedTableName]}
+        resp1
+
+        resp2
+        (api/list-tables CLIENT
+                         {:limit 2
+                          :last-table LastEvaluatedTableName})]
+
+    (let [{:keys [TableNames]}
+          resp1]
+
+      (is (= 1 (count TableNames))))
+
+    (let [{:keys [TableNames]}
+          resp2]
+
+      (is (= 2 (count TableNames))))))

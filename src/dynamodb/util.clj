@@ -8,3 +8,10 @@
       (assoc! acc! k (f v)))
     (transient {})
     m)))
+
+
+(defmacro as
+  {:style/indent 1}
+  [x [bind] & body]
+  `(let [~bind ~x]
+     ~@body))
