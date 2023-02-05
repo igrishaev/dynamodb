@@ -12,8 +12,10 @@
                    (format "http://localhost:%s/foo" PORT)
                    "voronezh"))
 
+
 (defn make-table-name []
   (name (gensym "Table")))
+
 
 (defn make-tmp-table [table]
   (api/create-table CLIENT
@@ -221,3 +223,21 @@
           resp2]
 
       (is (= 2 (count TableNames))))))
+
+
+(deftest test-describe-table
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        response
+        (api/describe-table CLIENT table)]
+
+    (is (= {:TableStatus "ACTIVE"
+            :TableName table}
+           (-> response
+               :Table
+               (select-keys [:TableStatus :TableName]))))))

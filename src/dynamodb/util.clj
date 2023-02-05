@@ -1,4 +1,5 @@
-(ns dynamodb.util)
+(ns dynamodb.util
+  (:refer-clojure :exclude [update-vals]))
 
 
 (defn update-vals [m f]

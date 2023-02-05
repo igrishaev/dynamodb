@@ -151,7 +151,14 @@
      (client/make-request client "ListTables" params))))
 
 
-;; describe table
+;; ok
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DescribeTable.html
+(defn describe-table
+  [client table]
+  (let [params {:TableName table}]
+    (client/make-request client "DescribeTable" params)))
+
+
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
