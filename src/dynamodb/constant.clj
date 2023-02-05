@@ -11,3 +11,9 @@
 
 (def table-class-standard-infrequent_access
   "STANDARD_INFREQUENT_ACCESS")
+
+(def key-type-hash
+  "HASH")
+
+(def key-type-range
+  "RANGE")

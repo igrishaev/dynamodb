@@ -39,68 +39,100 @@
      :region region}))
 
 
+;; GetItem
+;; BatchGetItem
+;; BatchWriteItem
+;; CreateBackup
+;; CreateGlobalTable
+;; DeleteBackup
+;; DeleteItem
+;; DescribeBackup
+;; ExecuteStatement
+;; ExecuteTransaction
+;; PutItem
+;; Scan
+;; UpdateItem
 
+
+
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html#DDB-DeleteTable-request-TableName
+(defn delete-table
+  [client table]
+  (let [params
+        {:TableName table}]
+    (client/make-request client "DeleteTable" params)))
+
+
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html
 (defn create-table
-  "https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html"
 
-  [client table attrs key-schema
+  ([client table attrs key-schema]
+   (create-table client table attrs key-schema nil))
 
-   {:keys [tags
+  ([client table attrs key-schema
+    {:keys [tags
+            billing-mode
+            table-class
+            provisioned-throughput
+            GlobalSecondaryIndexes
+            LocalSecondaryIndexes
+            SSESpecification
+            StreamSpecification]}]
+
+   (let [AttributeDefinitions
+         (for [[attr-name attr-type] attrs]
+           {:AttributeName attr-name
+            :AttributeType attr-type})
+
+         KeySchema
+         (for [[attr-name key-type] key-schema]
+           {:AttributeName attr-name
+            :KeyType key-type})
+
+         params
+         (cond-> {:AttributeDefinitions AttributeDefinitions
+                  :KeySchema KeySchema
+                  :TableName table}
+
            billing-mode
-           table-class
-           GlobalSecondaryIndexes
-           LocalSecondaryIndexes
-           ProvisionedThroughput
+           (assoc :BillingMode billing-mode)
+
+           provisioned-throughput
+           (as [params]
+             (let [[read-units write-units]
+                   provisioned-throughput]
+               (assoc params
+                      :ProvisionedThroughput
+                      {:ReadCapacityUnits read-units
+                       :WriteCapacityUnits write-units})))
+
            SSESpecification
-           StreamSpecification]}]
+           (assoc :SSESpecification SSESpecification)
 
-  (let [AttributeDefinitions
-        (for [[attr-name attr-type] attrs]
-          {:AttributeName attr-name
-           :AttributeType attr-type})
+           GlobalSecondaryIndexes
+           (assoc :GlobalSecondaryIndexes GlobalSecondaryIndexes)
 
-        KeySchema
-        (for [[attr-name key-type] key-schema]
-          {:AttributeName attr-name
-           :KeyType key-type})
+           LocalSecondaryIndexes
+           (assoc :LocalSecondaryIndexes LocalSecondaryIndexes)
 
-        params
-        (cond-> {:AttributeDefinitions AttributeDefinitions
-                 :KeySchema KeySchema
-                 :TableName table}
+           StreamSpecification
+           (assoc :StreamSpecification StreamSpecification)
 
-          billing-mode
-          (assoc :BillingMode billing-mode)
+           table-class
+           (assoc :TableClass table-class)
 
-          GlobalSecondaryIndexes
-          (assoc :GlobalSecondaryIndexes GlobalSecondaryIndexes)
+           tags
+           (assoc :Tags (for [[tag-key tag-val] tags]
+                          {:Key tag-key
+                           :Value tag-val})))
 
-          LocalSecondaryIndexes
-          (assoc :LocalSecondaryIndexes LocalSecondaryIndexes)
+         response
+         (client/make-request client "CreateTable" params)]
 
-          ProvisionedThroughput
-          (assoc :ProvisionedThroughput ProvisionedThroughput)
-
-          SSESpecification
-          (assoc :SSESpecification SSESpecification)
-
-          StreamSpecification
-          (assoc :StreamSpecification StreamSpecification)
-
-          table-class
-          (assoc :TableClass table-class)
-
-          tags
-          (assoc :Tags (for [[tag-key tag-val] tags]
-                         {:Key tag-key
-                          :Value tag-val})))
-
-        response
-        (client/make-request client "CreateTable" params)]
-
-    response))
+     response)))
 
 
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ListTables.html
 (defn list-tables
   [client {:keys [ExclusiveStartTableName
                   limit]}]
@@ -112,18 +144,14 @@
           (assoc :ExclusiveStartTableName ExclusiveStartTableName)
 
           limit
-          (assoc :Limit limit))
+          (assoc :Limit limit))]
 
-        response
-        (client/make-request client "ListTables" params)]
-
-    response))
+    (client/make-request client "ListTables" params)))
 
 
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
 (defn put-item
-  "
-  https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
-  "
+
   ([client table item]
    (put-item client table item nil))
 
