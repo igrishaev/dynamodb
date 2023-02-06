@@ -378,30 +378,51 @@
   ([client table item]
    (update-item client table item nil))
 
-  ([client table item {:keys [set
+  ([client table item {:keys [condition
+                              attr-names
+                              attr-values
+                              set
                               add
                               remove
                               delete
-
-                              ]}]
+                              return-consumed-capacity
+                              return-item-collection-metrics
+                              return-values]}]
 
    (let [params
          (cond-> {:TableName table
                   :Key (encode-attrs item)}
 
-           ;; condition
-           ;; (assoc :ConditionExpression condition)
+           condition
+           (assoc :ConditionExpression condition)
 
-           ;; {:keys [set add remove delete]}
+           attr-names
+           (assoc :ExpressionAttributeNames attr-names)
 
-           ;; ExpressionAttributeNames
-           ;; ExpressionAttributeValues
-           ;; ReturnConsumedCapacity
-           ;; ReturnItemCollectionMetrics
-           ;; ReturnValues
-           ;; UpdateExpression
+           attr-values
+           (assoc :ExpressionAttributeValues
+                  (-> attr-values
+                      (encode-attrs)
+                      (util/update-keys transform/key->attr-placeholder)))
 
-           )
+           return-consumed-capacity
+           (assoc :ReturnConsumedCapacity return-consumed-capacity)
+
+           return-item-collection-metrics
+           (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
+
+           return-values
+           (assoc :ReturnValues return-values)
+
+           (or set add remove delete)
+           (as [params']
+             (let [update-expression
+                   (transform/update-expression
+                    {:set set
+                     :add add
+                     :remove remove
+                     :delete delete})]
+               (assoc params' :UpdateExpression update-expression))))
 
          response
          (client/make-request client "UpdateItem" params)]
