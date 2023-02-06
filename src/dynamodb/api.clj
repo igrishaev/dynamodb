@@ -161,7 +161,7 @@
     (client/make-request client "DescribeTable" params)))
 
 
-;;
+;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
 (defn put-item
 
@@ -205,6 +205,48 @@
 
      (if (:Attributes response)
        (update response :Attributes decode-attrs)
+       response))))
+
+
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html
+(defn get-item
+
+  ([client table pk]
+   (get-item client table pk nil))
+
+  ([client table pk {:keys [ConsistentRead
+                            attr-names
+                            ProjectionExpression
+                            ReturnConsumedCapacity
+                            ]}]
+
+   (let [params
+         (cond-> {:TableName table
+                  :Key (encode-attrs pk)}
+
+           ConsistentRead
+           (assoc :ConsistentRead ConsistentRead)
+
+           ;; attr-names
+
+           ProjectionExpression
+           (assoc :ProjectionExpression ProjectionExpression)
+
+           ReturnConsumedCapacity
+           (assoc :ReturnConsumedCapacity ReturnConsumedCapacity))
+
+         response
+         (client/make-request client "GetItem" params)]
+
+     (cond
+
+       (= response {})
+       nil
+
+       (:Item response)
+       (update response :Item decode-attrs)
+
+       :else
        response))))
 
 

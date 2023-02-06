@@ -361,3 +361,45 @@
                                :name "Ivan"
                                :foo 1}}
            resp3))))
+
+
+(deftest test-get-item-ok
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :user/foo 1})
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 2
+                       :user/name "Huan"
+                       :user/foo 2})
+
+        resp1
+        (api/get-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"})
+
+        resp2
+        (api/get-item CLIENT
+                      table
+                      {:user/id 3
+                       :user/name "Ivan"})]
+
+    (is (= {:Item #:user{:id 1
+                         :name "Ivan"
+                         :foo 1}}
+           resp1))
+
+    (is (nil? resp2))))
