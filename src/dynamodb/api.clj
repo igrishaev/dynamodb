@@ -57,6 +57,7 @@
   (:import
    java.net.URI)
   (:require
+   [clojure.string :as str]
    [dynamodb.util :as util :refer [as]]
    [dynamodb.transform :as transform]
    [dynamodb.constant :as const]
@@ -263,32 +264,36 @@
        response))))
 
 
+;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html
 (defn get-item
 
   ([client table pk]
    (get-item client table pk nil))
 
-  ([client table pk {:keys [ConsistentRead
+  ([client table pk {:keys [attrs
                             attr-names
-                            ProjectionExpression
-                            ReturnConsumedCapacity
-                            ]}]
+                            consistent-read?
+                            return-consumed-capacity]}]
 
    (let [params
          (cond-> {:TableName table
                   :Key (encode-attrs pk)}
 
-           ConsistentRead
-           (assoc :ConsistentRead ConsistentRead)
+           attr-names
+           (assoc :ExpressionAttributeNames attr-names)
 
-           ;; attr-names
+           (some? consistent-read?)
+           (assoc :ConsistentRead consistent-read?)
 
-           ProjectionExpression
-           (assoc :ProjectionExpression ProjectionExpression)
+           return-consumed-capacity
+           (assoc :ReturnConsumedCapacity return-consumed-capacity)
 
-           ReturnConsumedCapacity
-           (assoc :ReturnConsumedCapacity ReturnConsumedCapacity))
+           attrs
+           (assoc :ProjectionExpression
+                  (->> attrs
+                       (map transform/key->proj-expr)
+                       (str/join ", "))))
 
          response
          (client/make-request client "GetItem" params)]
@@ -303,6 +308,42 @@
 
        :else
        response))))
+
+
+(defn delete-item
+
+  ([client table pk]
+   (delete-item client table pk nil))
+
+  ([client table pk {:keys [condition
+                            attr-names
+                            attr-values
+                            ReturnConsumedCapacity
+                            ReturnItemCollectionMetrics
+                            ReturnValues]}]
+
+   (let [params
+         (cond-> {:TableName table
+                  :Key (encode-attrs pk)}
+
+           condition
+           (assoc :ConditionExpression condition)
+
+           attr-names
+           (assoc :ExpressionAttributeNames attr-names)
+
+           attr-values
+           (assoc :ExpressionAttributeValues
+                  (-> attr-values
+                      (encode-attrs)
+                      (util/update-keys transform/key->attr-placeholder))))
+
+         response
+         (client/make-request client "Deletetem" params)
+
+         ]
+
+     response)))
 
 
 #_

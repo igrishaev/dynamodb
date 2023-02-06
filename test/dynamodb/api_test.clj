@@ -403,3 +403,37 @@
            resp1))
 
     (is (nil? resp2))))
+
+
+(deftest test-get-item-proj-expression
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/kek "123"
+                       :test/foo 1
+                       :abc nil
+                       :foo "lol"
+                       :bar {:baz [1 2 3]}})
+
+        resp1
+        (api/get-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"}
+                      {:attr-names {"#kek" :test/kek}
+                       :attrs ["#kek" "bar.baz[1]" "abc" :foo]})]
+
+    (is (= {:Item {:test/kek "123"
+                   :bar {:baz [2]}
+                   :abc nil
+                   :foo "lol"}}
+           resp1))))
