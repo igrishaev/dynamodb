@@ -52,5 +52,5 @@
 
 (deftest test-decode-attrs
   (is (= {:foo 1 :bar {:a 1}}
-         (decode-attrs {:foo {:N 1}
-                        :bar {:M {:a {:N 1}}}}))))
+         (decode-attrs {:foo {:N "1"}
+                        :bar {:M {:a {:N "1"}}}}))))

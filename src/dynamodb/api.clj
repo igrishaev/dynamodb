@@ -185,7 +185,8 @@
            (assoc :ExpressionAttributeNames expression-attr-names)
 
            expression-attr-values
-           (assoc :ExpressionAttributeValues expression-attr-values)
+           (assoc :ExpressionAttributeValues
+                  (encode-attrs expression-attr-values))
 
            return-consumed-capacity
            (assoc :ReturnConsumedCapacity return-consumed-capacity)

@@ -273,3 +273,52 @@
              :user/name "Ivan"
              :foo/extra [1 true nil "kek"]}}
            resp2))))
+
+
+(deftest test-put-item-cond-expr
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        resp1
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :user/foo 1}
+                      {:return-values const/return-values-none})
+
+        resp2
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :user/test 3}
+                      {:condition-expression "#foo in (:one, :two, :three)"
+                       :expression-attr-names {"#foo" :user/foo}
+                       :expression-attr-values {":one" 1
+                                                :two 2 ;; TODO: fix it
+                                                ":three" 3}
+                       :return-values const/return-values-all-old})
+
+        resp3
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"}
+                      {
+                       :return-values const/return-values-all-old})
+
+        ]
+
+    (is (= {} resp1))
+
+    (is (= 1
+           resp2))
+
+    (is (= 1
+           resp3))
+    ))
