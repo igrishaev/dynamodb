@@ -364,15 +364,9 @@
        response))))
 
 
+;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_UpdateItem.html
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.UpdateExpressions.html
-
-#_
-{:set {:foo 42 :id/bar :kek}
- :add {:amount 1}
- :remove [:this :that]
- :delete {:user/colors :gray}}
-
 (defn update-item
 
   ([client table item]
@@ -427,12 +421,16 @@
          response
          (client/make-request client "UpdateItem" params)]
 
-     response
+     (cond
 
-     )
+       (= response {})
+       nil
 
-   )
-  )
+       (:Attributes response)
+       (update response :Attributes decode-attrs)
+
+       :else
+       response))))
 
 
 #_

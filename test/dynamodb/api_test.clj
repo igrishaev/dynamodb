@@ -430,7 +430,7 @@
                       {:user/id 1
                        :user/name "Ivan"}
                       {:attr-names {"#kek" :test/kek}
-                       :attrs ["#kek" "bar.baz[1]" "abc" :foo]})]
+                       :attrs ["#kek" "bar.baz[1]" "abc" :foo]})] ;; TODO
 
     (is (= {:Item {:test/kek "123"
                    :bar {:baz [2]}
@@ -554,4 +554,57 @@
            resp2))
 
     (is (= {:Item {:test/kek 99 :user/id 1 :user/name "Ivan"}}
+           resp3))))
+
+
+(deftest test-update-item-ok
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/kek 99
+                       :abc "test"
+                       :amount 3
+                       :kek/numbers #{1 3 5}})
+
+        resp2
+        (api/update-item CLIENT
+                         table
+                         {:user/id 1
+                          :user/name "Ivan"}
+                         {:condition "#id = :one"
+                          :attr-names {"#id" :user/id
+                                       "#kek" :test/kek
+                                       "#numbers" :kek/numbers}
+                          :attr-values {:num 123
+                                        :one 1
+                                        :drop #{1 5}}
+                          :set {"Foobar" :num}
+                          :add {"amount" :one}
+                          :delete {"#numbers" :drop}
+                          :remove ["#kek" "abc"]}) ;; TODO: keyword
+
+        resp3
+        (api/get-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"})]
+
+    (is (= nil
+           resp2))
+
+    (is (= {:Item
+            {:kek/numbers #{3}
+             :amount 4
+             :user/name "Ivan"
+             :user/id 1
+             :Foobar 123}}
            resp3))))

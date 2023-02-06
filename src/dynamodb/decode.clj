@@ -40,7 +40,7 @@
       (json/parse-string v)
 
       (:NS "NS") ;; ["42.2", "-19", "7.5", "3.14"]
-      (set v)
+      (set (map json/parse-string v))
 
       (:NULL "NULL") ;; true
       nil
