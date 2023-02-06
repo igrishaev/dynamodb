@@ -437,3 +437,121 @@
                    :abc nil
                    :foo "lol"}}
            resp1))))
+
+
+(deftest test-delete-item-ok
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/kek "123"})
+
+        resp2
+        (api/delete-item CLIENT
+                         table
+                         {:user/id 1 :user/name "Ivan"}
+                         {:return-values const/return-values-all-old})
+
+        resp3
+        (api/get-item CLIENT
+                      table
+                      {:user/id 1 :user/name "Ivan"})]
+
+    (is (= {:Attributes {:test/kek "123"
+                         :user/id 1
+                         :user/name "Ivan"}}
+           resp2))
+
+    (is (nil? resp3))))
+
+
+(deftest test-delete-item-condition-ok
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/kek 99})
+
+        resp2
+        (api/delete-item CLIENT
+                         table
+                         {:user/id 1 :user/name "Ivan"}
+                         {:condition "#kek in (:foo, :bar, :baz)"
+                          :attr-names {"#kek" :test/kek}
+                          :attr-values {:foo 1
+                                        :bar 99
+                                        :baz 3}})
+
+        resp3
+        (api/get-item CLIENT
+                      table
+                      {:user/id 1 :user/name "Ivan"})]
+
+    (is (nil? resp2))
+    (is (nil? resp3))))
+
+
+(deftest test-delete-item-condition-failes
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/kek 99})
+
+        resp2
+        (api/delete-item CLIENT
+                         table
+                         {:user/id 1 :user/name "Ivan"}
+                         {:condition "#kek in (:foo, :bar, :baz)"
+                          :attr-names {"#kek" :test/kek}
+                          :attr-values {:foo 1
+                                        :bar 2
+                                        :baz 3}})
+
+        resp3
+        (api/get-item CLIENT
+                      table
+                      {:user/id 1 :user/name "Ivan"})]
+
+    (is (= {:error? true
+            :status 400
+            :path "com.amazonaws.dynamodb.v20120810"
+            :exception "ConditionalCheckFailedException"
+            :message "The conditional request failed"
+            :payload
+            {:TableName table
+             :Key #:user{:id {:N 1} :name {:S "Ivan"}}
+             :ConditionExpression "#kek in (:foo, :bar, :baz)"
+             :ExpressionAttributeNames {"#kek" :test/kek}
+             :ExpressionAttributeValues
+             {":foo" {:N 1} ":bar" {:N 2} ":baz" {:N 3}}}
+            :target "DeleteItem"}
+
+           resp2))
+
+    (is (= {:Item {:test/kek 99 :user/id 1 :user/name "Ivan"}}
+           resp3))))

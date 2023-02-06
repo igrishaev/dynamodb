@@ -7,7 +7,7 @@
   CreateGlobalTable
 + CreateTable
   DeleteBackup
-  DeleteItem
++ DeleteItem
 + DeleteTable
   DescribeBackup
   DescribeContinuousBackups
@@ -310,6 +310,8 @@
        response))))
 
 
+;; ok
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteItem.html
 (defn delete-item
 
   ([client table pk]
@@ -318,9 +320,9 @@
   ([client table pk {:keys [condition
                             attr-names
                             attr-values
-                            ReturnConsumedCapacity
-                            ReturnItemCollectionMetrics
-                            ReturnValues]}]
+                            return-consumed-capacity
+                            return-item-collection-metrics
+                            return-values]}]
 
    (let [params
          (cond-> {:TableName table
@@ -336,14 +338,30 @@
            (assoc :ExpressionAttributeValues
                   (-> attr-values
                       (encode-attrs)
-                      (util/update-keys transform/key->attr-placeholder))))
+                      (util/update-keys transform/key->attr-placeholder)))
+
+           return-consumed-capacity
+           (assoc :ReturnConsumedCapacity return-consumed-capacity)
+
+           return-item-collection-metrics
+           (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
+
+           return-values
+           (assoc :ReturnValues return-values))
 
          response
-         (client/make-request client "Deletetem" params)
+         (client/make-request client "DeleteItem" params)]
 
-         ]
+     (cond
 
-     response)))
+       (= response {})
+       nil
+
+       (:Attributes response)
+       (update response :Attributes decode-attrs)
+
+       :else
+       response))))
 
 
 #_
