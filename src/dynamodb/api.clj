@@ -37,10 +37,10 @@
 + ListTables
   ListTagsOfResource
 + PutItem
-  Query
+. Query
   RestoreTableFromBackup
   RestoreTableToPointInTime
-  Scan
+. Scan
   TagResource
   TransactGetItems
   TransactWriteItems
@@ -49,7 +49,7 @@
   UpdateContributorInsights
   UpdateGlobalTable
   UpdateGlobalTableSettings
-  UpdateItem
++ UpdateItem
   UpdateTable
   UpdateTableReplicaAutoScaling
   UpdateTimeToLive
@@ -65,6 +65,8 @@
    [dynamodb.decode :refer [decode-attrs]]
    [dynamodb.encode :refer [encode-attrs]]))
 
+
+;; TODO: mask secret-key!
 
 (defn make-client
 
