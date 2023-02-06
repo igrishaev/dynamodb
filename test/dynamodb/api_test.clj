@@ -1,8 +1,15 @@
 (ns dynamodb.api-test
   (:require
+   dynamodb.spec
    [dynamodb.constant :as const]
    [dynamodb.api :as api]
+   [clojure.spec.test.alpha :as spec.test]
    [clojure.test :refer [is deftest]]))
+
+
+(spec.test/instrument `api/delete-table
+                      `api/put-item)
+
 
 (def PORT 8000)
 
