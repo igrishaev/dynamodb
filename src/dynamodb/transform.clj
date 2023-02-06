@@ -64,4 +64,4 @@
                   acc))
               nil
               tag->form)]
-    (str/join " " exprs)))
+    (str/join " " (reverse exprs))))
