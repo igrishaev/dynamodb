@@ -364,6 +364,44 @@
        response))))
 
 
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_UpdateItem.html
+;; https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.UpdateExpressions.html
+(defn update-item
+
+  ([client table item]
+   (update-item client table item nil))
+
+  ([client table item {:keys [condition]}]
+
+   (let [params
+         (cond-> {:TableName table
+                  :Key (encode-attrs item)}
+
+           condition
+           (assoc :ConditionExpression condition)
+
+           ;; {:keys [set add remove delete]}
+
+           ;; ExpressionAttributeNames
+           ;; ExpressionAttributeValues
+           ;; ReturnConsumedCapacity
+           ;; ReturnItemCollectionMetrics
+           ;; ReturnValues
+           ;; UpdateExpression
+
+           )
+
+         response
+         (client/make-request client "UpdateItem" params)]
+
+     response
+
+     )
+
+   )
+  )
+
+
 #_
 (comment
 
