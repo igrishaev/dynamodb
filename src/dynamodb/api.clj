@@ -1,4 +1,59 @@
 (ns dynamodb.api
+  "
+  BatchExecuteStatement
+  BatchGetItem
+  BatchWriteItem
+  CreateBackup
+  CreateGlobalTable
++ CreateTable
+  DeleteBackup
+  DeleteItem
++ DeleteTable
+  DescribeBackup
+  DescribeContinuousBackups
+  DescribeContributorInsights
+  DescribeEndpoints
+  DescribeExport
+  DescribeGlobalTable
+  DescribeGlobalTableSettings
+  DescribeImport
+  DescribeKinesisStreamingDestination
+  DescribeLimits
++ DescribeTable
+  DescribeTableReplicaAutoScaling
+  DescribeTimeToLive
+  DisableKinesisStreamingDestination
+  EnableKinesisStreamingDestination
+  ExecuteStatement
+  ExecuteTransaction
+  ExportTableToPointInTime
++ GetItem
+  ImportTable
+  ListBackups
+  ListContributorInsights
+  ListExports
+  ListGlobalTables
+  ListImports
++ ListTables
+  ListTagsOfResource
++ PutItem
+  Query
+  RestoreTableFromBackup
+  RestoreTableToPointInTime
+  Scan
+  TagResource
+  TransactGetItems
+  TransactWriteItems
+  UntagResource
+  UpdateContinuousBackups
+  UpdateContributorInsights
+  UpdateGlobalTable
+  UpdateGlobalTableSettings
+  UpdateItem
+  UpdateTable
+  UpdateTableReplicaAutoScaling
+  UpdateTimeToLive
+  "
   (:import
    java.net.URI)
   (:require
@@ -42,19 +97,19 @@
       :async? async?})))
 
 
-;; GetItem
 ;; BatchGetItem
+;; DeleteItem
+;; UpdateItem
+;; Query
+;; Scan
 ;; BatchWriteItem
+
 ;; CreateBackup
 ;; CreateGlobalTable
 ;; DeleteBackup
-;; DeleteItem
 ;; DescribeBackup
 ;; ExecuteStatement
 ;; ExecuteTransaction
-;; PutItem
-;; Scan
-;; UpdateItem
 
 
 ;; ok
