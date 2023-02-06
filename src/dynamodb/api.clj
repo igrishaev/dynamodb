@@ -2,7 +2,8 @@
   (:import
    java.net.URI)
   (:require
-   [dynamodb.util :refer [as]]
+   [dynamodb.util :as util :refer [as]]
+   [dynamodb.transform :as transform]
    [dynamodb.constant :as const]
    [dynamodb.client :as client]
    [dynamodb.decode :refer [decode-attrs]]
@@ -167,9 +168,9 @@
   ([client table item]
    (put-item client table item nil))
 
-  ([client table item {:keys [condition-expression
-                              expression-attr-names
-                              expression-attr-values
+  ([client table item {:keys [condition
+                              attr-names
+                              attr-values
                               return-consumed-capacity
                               return-item-collection-metrics
                               return-values]}]
@@ -178,15 +179,17 @@
          (cond-> {:TableName table
                   :Item (encode-attrs item)}
 
-           condition-expression
-           (assoc :ConditionExpression condition-expression)
+           condition
+           (assoc :ConditionExpression condition)
 
-           expression-attr-names
-           (assoc :ExpressionAttributeNames expression-attr-names)
+           attr-names
+           (assoc :ExpressionAttributeNames attr-names)
 
-           expression-attr-values
+           attr-values
            (assoc :ExpressionAttributeValues
-                  (encode-attrs expression-attr-values))
+                  (-> attr-values
+                      (encode-attrs)
+                      (util/update-keys transform/key->attr-placeholder)))
 
            return-consumed-capacity
            (assoc :ReturnConsumedCapacity return-consumed-capacity)

@@ -275,7 +275,7 @@
            resp2))))
 
 
-(deftest test-put-item-cond-expr
+(deftest test-put-item-cond-expr-true
 
   (let [table
         (make-table-name)
@@ -297,11 +297,11 @@
                       {:user/id 1
                        :user/name "Ivan"
                        :user/test 3}
-                      {:condition-expression "#foo in (:one, :two, :three)"
-                       :expression-attr-names {"#foo" :user/foo}
-                       :expression-attr-values {":one" 1
-                                                :two 2 ;; TODO: fix it
-                                                ":three" 3}
+                      {:condition "#foo in (:one, :two, :three)"
+                       :attr-names {"#foo" :user/foo}
+                       :attr-values {":one" 1
+                                     :two 2
+                                     ":three" 3}
                        :return-values const/return-values-all-old})
 
         resp3
@@ -309,16 +309,55 @@
                       table
                       {:user/id 1
                        :user/name "Ivan"}
-                      {
-                       :return-values const/return-values-all-old})
-
-        ]
+                      {:return-values const/return-values-all-old})]
 
     (is (= {} resp1))
 
-    (is (= 1
+    (is (= {:Attributes #:user{:id 1
+                               :name "Ivan"
+                               :foo 1}}
            resp2))
 
-    (is (= 1
-           resp3))
-    ))
+    (is (= {:Attributes #:user{:id 1
+                               :name "Ivan"
+                               :test 3}}
+           resp3))))
+
+
+(deftest test-put-item-cond-expr-false
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        resp1
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :user/foo 1})
+
+        resp2
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :user/foo 3}
+                      {:condition "#foo in (:ten, :eleven)"
+                       :attr-names {"#foo" :user/foo}
+                       :attr-values {:ten 10
+                                     :eleven 11}})
+
+        resp3
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"}
+                      {:return-values const/return-values-all-old})]
+
+    (is (= {:Attributes #:user{:id 1
+                               :name "Ivan"
+                               :foo 1}}
+           resp3))))
