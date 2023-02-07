@@ -435,6 +435,72 @@
        response))))
 
 
+(defn query
+
+  ([client table]
+   (query client table nil))
+
+  ([client table {:keys [consistent-read?
+                         filter-expression
+                         index
+                         limit
+                         scan-index-forward?
+                         start-key
+                         select
+                         return-consumed-capacity
+                         key-condition-expression
+                         attr-names
+                         attr-values
+                         attrs]}]
+
+   (let [params
+         (cond-> {:TableName table}
+
+           (some? consistent-read?)
+           (assoc :ConsistentRead consistent-read?)
+
+           filter-expression
+           (assoc :FilterExpression filter-expression)
+
+           index
+           (assoc :IndexName index)
+
+           limit
+           (assoc :Limit limit)
+
+           (some? scan-index-forward?)
+           (assoc :ScanIndexForward scan-index-forward?)
+
+           start-key
+           (assoc :ExclusiveStartKey start-key)
+
+           select
+           (assoc :Select select)
+
+           return-consumed-capacity
+           (assoc :ReturnConsumedCapacity return-consumed-capacity)
+
+           attr-names
+           (assoc :ExpressionAttributeNames attr-names)
+
+           key-condition-expression
+           (assoc :KeyConditionExpression key-condition-expression)
+
+           attr-values
+           (assoc :ExpressionAttributeValues
+                  (-> attr-values
+                      (encode-attrs)
+                      (util/update-keys transform/key->attr-placeholder)))
+
+           attrs
+           (assoc :ProjectionExpression
+                  (->> attrs
+                       (map transform/key->proj-expr)
+                       (str/join ", "))))]
+
+     123)))
+
+
 #_
 (comment
 

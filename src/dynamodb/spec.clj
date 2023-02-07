@@ -5,7 +5,8 @@
    [clojure.spec.alpha :as s]))
 
 
-
+(s/def ::ne-string
+  (s/and string? (complement str/blank?)))
 
 
 (s/def ::access-key ::ne-string)
