@@ -435,6 +435,9 @@
        response))))
 
 
+;; ok
+;; https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
 (defn query
 
   ([client table]
@@ -444,11 +447,11 @@
                          filter-expression
                          index
                          limit
-                         scan-index-forward?
+                         scan-forward?
                          start-key
                          select
                          return-consumed-capacity
-                         key-condition-expression
+                         key-condition
                          attr-names
                          attr-values
                          attrs]}]
@@ -468,11 +471,11 @@
            limit
            (assoc :Limit limit)
 
-           (some? scan-index-forward?)
-           (assoc :ScanIndexForward scan-index-forward?)
+           (some? scan-forward?)
+           (assoc :ScanIndexForward scan-forward?)
 
            start-key
-           (assoc :ExclusiveStartKey start-key)
+           (assoc :ExclusiveStartKey (encode-attrs start-key))
 
            select
            (assoc :Select select)
@@ -483,8 +486,8 @@
            attr-names
            (assoc :ExpressionAttributeNames attr-names)
 
-           key-condition-expression
-           (assoc :KeyConditionExpression key-condition-expression)
+           key-condition
+           (assoc :KeyConditionExpression key-condition)
 
            attr-values
            (assoc :ExpressionAttributeValues
@@ -496,9 +499,20 @@
            (assoc :ProjectionExpression
                   (->> attrs
                        (map transform/key->proj-expr)
-                       (str/join ", "))))]
+                       (str/join ", "))))
 
-     123)))
+         response
+         (client/make-request client "Query" params)]
+
+     (cond-> response
+
+       (:Items response)
+       (update :Items
+               (fn [items]
+                 (mapv decode-attrs items)))
+
+       (:LastEvaluatedKey response)
+       (update :LastEvaluatedKey decode-attrs)))))
 
 
 #_

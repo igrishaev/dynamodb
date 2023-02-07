@@ -615,3 +615,78 @@
              :user/id 1
              :Foobar 123}}
            resp3))))
+
+
+(deftest test-query-ok
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/foo 1})
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Juan"
+                       :test/foo 2})
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 2
+                       :user/name "Huan"
+                       :test/foo 3})
+
+        params
+        {:attr-names {"#id" :user/id}
+         :attr-values {:one 1}
+         :key-condition "#id = :one"
+         :limit 1}
+
+        resp1
+        (api/query CLIENT table params)
+
+        {:keys [LastEvaluatedKey]}
+        resp1
+
+        resp2
+        (api/query CLIENT table
+                   (assoc params :start-key LastEvaluatedKey))
+
+        {:keys [LastEvaluatedKey]}
+        resp2
+
+        resp3
+        (api/query CLIENT table
+                   (assoc params :start-key LastEvaluatedKey))]
+
+    (is (= {:Items [{:user/id 1
+                     :test/foo 1
+                     :user/name "Ivan"}]
+            :Count 1
+            :ScannedCount 1
+            :LastEvaluatedKey #:user{:id 1
+                                     :name "Ivan"}}
+
+           resp1))
+
+    (is (= {:Items [{:user/id 1
+                     :test/foo 2
+                     :user/name "Juan"}]
+            :Count 1
+            :ScannedCount 1
+            :LastEvaluatedKey #:user{:id 1 :name "Juan"}}
+
+           resp2))
+
+    (is (= {:Items [] :Count 0 :ScannedCount 0}
+           resp3))))

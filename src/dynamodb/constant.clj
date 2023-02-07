@@ -51,3 +51,15 @@
 
 (def return-values-updated-new
   "UPDATED_NEW")
+
+(def select-all-attributes
+  "ALL_ATTRIBUTES")
+
+(def select-all-projected-attributes
+  "ALL_PROJECTED_ATTRIBUTES")
+
+(def select-specific-attributes
+  "SPECIFIC_ATTRIBUTES")
+
+(def select-count
+  "COUNT")
