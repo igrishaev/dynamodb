@@ -515,6 +515,8 @@
        (update :LastEvaluatedKey decode-attrs)))))
 
 
+;; ok
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
 (defn scan
 
   ([client table]
