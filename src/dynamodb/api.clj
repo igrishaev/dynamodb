@@ -213,13 +213,13 @@
   ([client]
    (list-tables client nil))
 
-  ([client {:keys [limit
-                   last-table]}]
+  ([client {:keys [^Long limit
+                   ^String start-table]}]
    (let [params
          (cond-> {}
 
-           last-table
-           (assoc :ExclusiveStartTableName last-table)
+           start-table
+           (assoc :ExclusiveStartTableName start-table)
 
            limit
            (assoc :Limit limit))]
@@ -242,28 +242,25 @@
   ([client table item]
    (put-item client table item nil))
 
-  ([client table item {:keys [condition
-                              attr-names
-                              attr-values
-                              return-consumed-capacity
-                              return-item-collection-metrics
-                              return-values]}]
+  ([client table item {:keys [^String sql-condition
+                              ^Map    attr-keys
+                              ^Map    attr-vals
+                              ^String return-consumed-capacity
+                              ^String return-item-collection-metrics
+                              ^String return-values]}]
 
    (let [params
          (cond-> {:TableName table
                   :Item (encode-attrs item)}
 
-           condition
-           (assoc :ConditionExpression condition)
+           sql-condition
+           (assoc :ConditionExpression sql-condition)
 
-           attr-names
-           (assoc :ExpressionAttributeNames attr-names)
+           attr-keys
+           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
 
-           attr-values
-           (assoc :ExpressionAttributeValues
-                  (-> attr-values
-                      (encode-attrs)
-                      (util/update-keys transform/key->attr-placeholder)))
+           attr-vals
+           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
 
            return-consumed-capacity
            (assoc :ReturnConsumedCapacity return-consumed-capacity)
@@ -277,9 +274,9 @@
          response
          (client/make-request client "PutItem" params)]
 
-     (if (:Attributes response)
-       (update response :Attributes decode-attrs)
-       response))))
+     (cond-> response
+       (:Attributes response)
+       (update :Attributes decode-attrs)))))
 
 
 ;; ok
@@ -289,17 +286,17 @@
   ([client table pk]
    (get-item client table pk nil))
 
-  ([client table pk {:keys [attrs
-                            attr-names
-                            consistent-read?
-                            return-consumed-capacity]}]
+  ([client table pk {:keys [^List    attrs-get
+                            ^Map     attr-keys
+                            ^Boolean consistent-read?
+                            ^String  return-consumed-capacity]}]
 
    (let [params
          (cond-> {:TableName table
                   :Key (encode-attrs pk)}
 
-           attr-names
-           (assoc :ExpressionAttributeNames attr-names)
+           attr-keys
+           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
 
            (some? consistent-read?)
            (assoc :ConsistentRead consistent-read?)
@@ -307,25 +304,16 @@
            return-consumed-capacity
            (assoc :ReturnConsumedCapacity return-consumed-capacity)
 
-           attrs
-           (assoc :ProjectionExpression
-                  (->> attrs
-                       (map transform/key->proj-expr)
-                       (str/join ", "))))
+           attrs-get
+           (assoc :ProjectionExpression (-enc-attr-to-get attrs-get)))
 
          response
          (client/make-request client "GetItem" params)]
 
-     (cond
-
-       (= response {})
-       nil
-
-       (:Item response)
-       (update response :Item decode-attrs)
-
-       :else
-       response))))
+     (when-not (= response {})
+       (cond-> response
+         (:Item response)
+         (update :Item decode-attrs))))))
 
 
 ;; ok

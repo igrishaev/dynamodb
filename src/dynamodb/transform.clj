@@ -68,7 +68,14 @@
 
 
 (defn keyword->name-placeholder [k]
-  (format "#%s" (name k)))
+  (cond
+    (keyword? k)
+    (format "#%s" (name k))
+    (string? k)
+    k
+    :else
+    (throw (ex-info "Wrong attribute placeholder"
+                    {:key k}))))
 
 
 (defn encode-attr-names [mapping]

@@ -1,4 +1,5 @@
-- refactor params
+- refactor update-item
+- refactor create-table
 - throw? param
 - async handler
 - with-async?
@@ -6,3 +7,5 @@
 - keywords
 - reduce copy-paste
 - mask secret-key
+- write specs
+- instrument specs

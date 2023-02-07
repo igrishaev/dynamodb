@@ -1,4 +1,6 @@
 (ns dynamodb.api-test
+  (:import
+   java.util.UUID)
   (:require
    dynamodb.spec
    [dynamodb.constant :as const]
@@ -21,7 +23,7 @@
 
 
 (defn make-table-name []
-  (name (gensym "Table")))
+  (format "Table-%s" (UUID/randomUUID)))
 
 
 (defn make-tmp-table [table]
@@ -51,7 +53,7 @@
 (deftest test-create-table-pay-per-request
 
   (let [table
-        (name (gensym "Table"))
+        (make-table-name)
 
         response
         (api/create-table CLIENT
@@ -93,7 +95,7 @@
 (deftest test-create-table-provisioned
 
   (let [table
-        (name (gensym "Table"))
+        (make-table-name)
 
         response
         (api/create-table CLIENT
@@ -135,7 +137,7 @@
 (deftest test-api-negative-response
 
   (let [table
-        (name (gensym "Table"))
+        (make-table-name)
 
         response
         (api/delete-table CLIENT table)]
@@ -153,7 +155,7 @@
 (deftest test-api-delete-table
 
   (let [table
-        (name (gensym "Table"))
+        (make-table-name)
 
         resp1
         (api/create-table CLIENT
@@ -219,7 +221,7 @@
         resp2
         (api/list-tables CLIENT
                          {:limit 2
-                          :last-table LastEvaluatedTableName})]
+                          :start-table LastEvaluatedTableName})]
 
     (let [{:keys [TableNames]}
           resp1]
@@ -304,11 +306,11 @@
                       {:user/id 1
                        :user/name "Ivan"
                        :user/test 3}
-                      {:condition "#foo in (:one, :two, :three)"
-                       :attr-names {"#foo" :user/foo}
-                       :attr-values {":one" 1
-                                     :two 2
-                                     ":three" 3}
+                      {:sql-condition "#foo in (:one, :two, :three)"
+                       :attr-keys {:foo :user/foo}
+                       :attr-vals {:one 1
+                                   :two 2
+                                   :three 3}
                        :return-values const/return-values-all-old})
 
         resp3
@@ -352,8 +354,8 @@
                       {:user/id 1
                        :user/name "Ivan"
                        :user/foo 3}
-                      {:condition "#foo in (:ten, :eleven)"
-                       :attr-names {"#foo" :user/foo}
+                      {:sql-condition "#foo in (:ten, :eleven)"
+                       :attr-names {:foo :user/foo}
                        :attr-values {:ten 10
                                      :eleven 11}})
 
@@ -436,8 +438,8 @@
                       table
                       {:user/id 1
                        :user/name "Ivan"}
-                      {:attr-names {"#kek" :test/kek}
-                       :attrs ["#kek" "bar.baz[1]" "abc" :foo]})] ;; TODO
+                      {:attr-keys {:kek :test/kek}
+                       :attrs-get [:kek "bar.baz[1]" "abc" "foo"]})]
 
     (is (= {:Item {:test/kek "123"
                    :bar {:baz [2]}
