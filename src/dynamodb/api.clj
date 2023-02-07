@@ -37,10 +37,10 @@
 + ListTables
   ListTagsOfResource
 + PutItem
-. Query
++ Query
   RestoreTableFromBackup
   RestoreTableToPointInTime
-. Scan
++ Scan
   TagResource
   TransactGetItems
   TransactWriteItems
@@ -515,25 +515,78 @@
        (update :LastEvaluatedKey decode-attrs)))))
 
 
-#_
-(comment
+(defn scan
 
-  (def -c (make-client "123"
-                       "abc"
-                       "http://localhost:8000/foo"
-                       "ru-central1"
-                       {:async? true}))
+  ([client table]
+   (scan client table nil))
 
-  (create-table -c "FooBar"
-                [[:id :N]]
-                [[:id :HASH]]
-                nil
-                )
+  ([client table {:keys [attr-names
+                         attr-values
+                         attrs
+                         consistent-read?
+                         filter-expression
+                         index
+                         limit
+                         return-consumed-capacity
+                         segment
+                         select
+                         start-key
+                         total-segments]}]
 
-  (list-tables -c)
+   (let [params
+         (cond-> {:TableName table}
 
-  (put-item -c :foobar {:aaa 1 :bbb 2})
+           (some? consistent-read?)
+           (assoc :ConsistentRead consistent-read?)
 
+           start-key
+           (assoc :ExclusiveStartKey (encode-attrs start-key))
 
+           attr-names
+           (assoc :ExpressionAttributeNames attr-names)
 
-  )
+           attr-values
+           (assoc :ExpressionAttributeValues
+                  (-> attr-values
+                      (encode-attrs)
+                      (util/update-keys transform/key->attr-placeholder)))
+
+           index
+           (assoc :IndexName index)
+
+           limit
+           (assoc :Limit limit)
+
+           select
+           (assoc :Select select)
+
+           return-consumed-capacity
+           (assoc :ReturnConsumedCapacity return-consumed-capacity)
+
+           segment
+           (assoc :Segment segment)
+
+           total-segments
+           (assoc :TotalSegments total-segments)
+
+           filter-expression
+           (assoc :FilterExpression filter-expression)
+
+           attrs
+           (assoc :ProjectionExpression
+                  (->> attrs
+                       (map transform/key->proj-expr)
+                       (str/join ", "))))
+
+         response
+         (client/make-request client "Scan" params)]
+
+     (cond-> response
+
+       (:Items response)
+       (update :Items
+               (fn [items]
+                 (mapv decode-attrs items)))
+
+       (:LastEvaluatedKey response)
+       (update :LastEvaluatedKey decode-attrs)))))

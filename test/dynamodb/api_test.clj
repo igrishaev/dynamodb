@@ -690,3 +690,68 @@
 
     (is (= {:Items [] :Count 0 :ScannedCount 0}
            resp3))))
+
+
+(deftest test-scan-ok
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/foo 2})
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Juan"
+                       :test/foo 2})
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 2
+                       :user/name "Huan"
+                       :test/foo 3})
+
+        params
+        {:filter-expression "#foo = :two"
+         :attr-names {"#foo" :test/foo}
+         :attr-values {:two 2}
+         :limit 2}
+
+        resp1
+        (api/scan CLIENT table params)
+
+        {:keys [LastEvaluatedKey]}
+        resp1
+
+        resp2
+        (api/scan CLIENT table
+                  (assoc params :start-key LastEvaluatedKey))]
+
+
+    (is (= {:Items [{:user/id 1
+                     :test/foo 2
+                     :user/name "Ivan"}]
+            :Count 1
+            :ScannedCount 2
+            :LastEvaluatedKey #:user{:id 1
+                                     :name "Ivan"}}
+
+           resp1))
+
+    (is (= {:Items [{:user/id 1
+                     :test/foo 2
+                     :user/name "Juan"}]
+            :Count 1
+            :ScannedCount 1}
+
+           resp2))))
