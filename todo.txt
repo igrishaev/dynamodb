@@ -9,3 +9,4 @@
 - mask secret-key
 - write specs
 - instrument specs
+- pass http params
