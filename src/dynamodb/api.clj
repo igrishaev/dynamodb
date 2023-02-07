@@ -68,7 +68,21 @@
    [dynamodb.encode :refer [encode-attrs]]))
 
 
-;; TODO: mask secret-key!
+(defn- -enc-attr-vals [attr-vals]
+  (-> attr-vals
+      (encode-attrs)
+      (util/update-keys str)))
+
+
+(defn- -enc-attr-to-get [attr-to-get]
+  (->> attr-to-get
+       (map transform/keyword->name-placeholder)
+       (str/join ", ")))
+
+
+(defn- -enc-attr-keys [attr-keys]
+  (transform/encode-attr-names attr-keys))
+
 
 (defn make-client
 
@@ -321,28 +335,25 @@
   ([client table pk]
    (delete-item client table pk nil))
 
-  ([client table pk {:keys [condition
-                            attr-names
-                            attr-values
-                            return-consumed-capacity
-                            return-item-collection-metrics
-                            return-values]}]
+  ([client table pk {:keys [^String sql-condition
+                            ^Map    attr-keys
+                            ^Map    attr-vals
+                            ^String return-consumed-capacity
+                            ^String return-item-collection-metrics
+                            ^String return-values]}]
 
    (let [params
          (cond-> {:TableName table
                   :Key (encode-attrs pk)}
 
-           condition
-           (assoc :ConditionExpression condition)
+           sql-condition
+           (assoc :ConditionExpression sql-condition)
 
-           attr-names
-           (assoc :ExpressionAttributeNames attr-names)
+           attr-keys
+           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
 
-           attr-values
-           (assoc :ExpressionAttributeValues
-                  (-> attr-values
-                      (encode-attrs)
-                      (util/update-keys transform/key->attr-placeholder)))
+           attr-vals
+           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
 
            return-consumed-capacity
            (assoc :ReturnConsumedCapacity return-consumed-capacity)
@@ -445,18 +456,18 @@
   ([client table]
    (query client table nil))
 
-  ([client table {:keys [consistent-read?
-                         filter-expression
-                         index
-                         limit
-                         scan-forward?
-                         start-key
-                         select
-                         return-consumed-capacity
-                         key-condition
-                         attr-names
-                         attr-values
-                         attrs]}]
+  ([client table {:keys [^Boolean consistent-read?
+                         ^String  sql-filter
+                         ^String  index
+                         ^Long    limit
+                         ^Boolean scan-forward?
+                         ^Map     start-key
+                         ^String  select
+                         ^Boolean return-consumed-capacity
+                         ^String  sql-key
+                         ^List    attrs-get
+                         ^Map     attr-keys
+                         ^Map     attr-vals]}]
 
    (let [params
          (cond-> {:TableName table}
@@ -464,8 +475,8 @@
            (some? consistent-read?)
            (assoc :ConsistentRead consistent-read?)
 
-           filter-expression
-           (assoc :FilterExpression filter-expression)
+           sql-filter
+           (assoc :FilterExpression sql-filter)
 
            index
            (assoc :IndexName index)
@@ -482,26 +493,20 @@
            select
            (assoc :Select select)
 
+           attrs-get
+           (assoc :ProjectionExpression (-enc-attr-to-get attrs-get))
+
+           attr-keys
+           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
+
+           attr-vals
+           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
+
            return-consumed-capacity
            (assoc :ReturnConsumedCapacity return-consumed-capacity)
 
-           attr-names
-           (assoc :ExpressionAttributeNames attr-names)
-
-           key-condition
-           (assoc :KeyConditionExpression key-condition)
-
-           attr-values
-           (assoc :ExpressionAttributeValues
-                  (-> attr-values
-                      (encode-attrs)
-                      (util/update-keys transform/key->attr-placeholder)))
-
-           attrs
-           (assoc :ProjectionExpression
-                  (->> attrs
-                       (map transform/key->proj-expr)
-                       (str/join ", "))))
+           sql-key
+           (assoc :KeyConditionExpression sql-key))
 
          response
          (client/make-request client "Query" params)]
@@ -515,22 +520,6 @@
 
        (:LastEvaluatedKey response)
        (update :LastEvaluatedKey decode-attrs)))))
-
-
-(defn- -enc-attr-vals [attr-vals]
-  (-> attr-vals
-      (encode-attrs)
-      (util/update-keys str)))
-
-
-(defn- -enc-attr-to-get [attr-to-get]
-  (->> attr-to-get
-       (map transform/keyword->name-placeholder)
-       (str/join ", ")))
-
-
-(defn- -enc-attr-keys [attr-keys]
-  (transform/encode-attr-names attr-keys))
 
 
 ;; ok

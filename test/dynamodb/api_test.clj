@@ -499,11 +499,11 @@
         (api/delete-item CLIENT
                          table
                          {:user/id 1 :user/name "Ivan"}
-                         {:condition "#kek in (:foo, :bar, :baz)"
-                          :attr-names {"#kek" :test/kek}
-                          :attr-values {:foo 1
-                                        :bar 99
-                                        :baz 3}})
+                         {:sql-condition "#kek in (:foo, :bar, :baz)"
+                          :attr-keys {:kek :test/kek}
+                          :attr-vals {:foo 1
+                                      :bar 99
+                                      :baz 3}})
 
         resp3
         (api/get-item CLIENT
@@ -647,9 +647,9 @@
                        :test/foo 3})
 
         params
-        {:attr-names {"#id" :user/id}
-         :attr-values {:one 1}
-         :key-condition "#id = :one"
+        {:sql-key "#id = :one"
+         :attr-keys {:id :user/id}
+         :attr-vals {:one 1}
          :limit 1}
 
         resp1
