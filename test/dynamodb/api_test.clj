@@ -722,9 +722,11 @@
                        :test/foo 3})
 
         params
-        {:filter-expression "#foo = :two"
-         :attr-names {"#foo" :test/foo}
-         :attr-values {:two 2}
+        {:sql-filter "#foo = :two"
+         :attrs-get [:foo :name]
+         :attr-keys {:foo :test/foo
+                     :name :user/name}
+         :attr-vals {:two 2}
          :limit 2}
 
         resp1
@@ -738,8 +740,7 @@
                   (assoc params :start-key LastEvaluatedKey))]
 
 
-    (is (= {:Items [{:user/id 1
-                     :test/foo 2
+    (is (= {:Items [{:test/foo 2
                      :user/name "Ivan"}]
             :Count 1
             :ScannedCount 2
@@ -748,8 +749,7 @@
 
            resp1))
 
-    (is (= {:Items [{:user/id 1
-                     :test/foo 2
+    (is (= {:Items [{:test/foo 2
                      :user/name "Juan"}]
             :Count 1
             :ScannedCount 1}

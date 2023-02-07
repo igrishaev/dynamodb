@@ -65,3 +65,15 @@
               nil
               tag->form)]
     (str/join " " (reverse exprs))))
+
+
+(defn keyword->name-placeholder [k]
+  (format "#%s" (name k)))
+
+
+(defn encode-attr-names [mapping]
+  (reduce-kv
+   (fn [acc k v]
+     (assoc acc (format "#%s" (name k)) v))
+   {}
+   mapping))

@@ -55,7 +55,9 @@
   UpdateTimeToLive
   "
   (:import
-   java.net.URI)
+   java.net.URI
+   java.util.Map
+   java.util.List)
   (:require
    [clojure.string :as str]
    [dynamodb.util :as util :refer [as]]
@@ -515,6 +517,22 @@
        (update :LastEvaluatedKey decode-attrs)))))
 
 
+(defn- -enc-attr-vals [attr-vals]
+  (-> attr-vals
+      (encode-attrs)
+      (util/update-keys str)))
+
+
+(defn- -enc-attr-to-get [attr-to-get]
+  (->> attr-to-get
+       (map transform/keyword->name-placeholder)
+       (str/join ", ")))
+
+
+(defn- -enc-attr-keys [attr-keys]
+  (transform/encode-attr-names attr-keys))
+
+
 ;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
 (defn scan
@@ -522,18 +540,18 @@
   ([client table]
    (scan client table nil))
 
-  ([client table {:keys [attr-names
-                         attr-values
-                         attrs
-                         consistent-read?
-                         filter-expression
-                         index
-                         limit
-                         return-consumed-capacity
-                         segment
-                         select
-                         start-key
-                         total-segments]}]
+  ([client table {:keys [^Map     attr-keys
+                         ^Map     attr-vals
+                         ^List    attrs-get
+                         ^Boolean consistent-read?
+                         ^String  sql-filter
+                         ^Boolean index
+                         ^Long    limit
+                         ^String  return-consumed-capacity
+                         ^Long    segment
+                         ^String  select
+                         ^Map     start-key
+                         ^Long    total-segments]}]
 
    (let [params
          (cond-> {:TableName table}
@@ -544,14 +562,11 @@
            start-key
            (assoc :ExclusiveStartKey (encode-attrs start-key))
 
-           attr-names
-           (assoc :ExpressionAttributeNames attr-names)
+           attr-keys
+           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
 
-           attr-values
-           (assoc :ExpressionAttributeValues
-                  (-> attr-values
-                      (encode-attrs)
-                      (util/update-keys transform/key->attr-placeholder)))
+           attr-vals
+           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
 
            index
            (assoc :IndexName index)
@@ -571,14 +586,11 @@
            total-segments
            (assoc :TotalSegments total-segments)
 
-           filter-expression
-           (assoc :FilterExpression filter-expression)
+           sql-filter
+           (assoc :FilterExpression sql-filter)
 
-           attrs
-           (assoc :ProjectionExpression
-                  (->> attrs
-                       (map transform/key->proj-expr)
-                       (str/join ", "))))
+           attrs-get
+           (assoc :ProjectionExpression (-enc-attr-to-get attrs-get)))
 
          response
          (client/make-request client "Scan" params)]
