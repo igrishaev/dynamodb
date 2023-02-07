@@ -375,9 +375,9 @@
   ([client table item]
    (update-item client table item nil))
 
-  ([client table item {:keys [condition
-                              attr-names
-                              attr-values
+  ([client table item {:keys [sql-condition
+                              attr-keys
+                              attr-vals
                               set
                               add
                               remove
@@ -390,17 +390,14 @@
          (cond-> {:TableName table
                   :Key (encode-attrs item)}
 
-           condition
-           (assoc :ConditionExpression condition)
+           sql-condition
+           (assoc :ConditionExpression sql-condition)
 
-           attr-names
-           (assoc :ExpressionAttributeNames attr-names)
+           attr-keys
+           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
 
-           attr-values
-           (assoc :ExpressionAttributeValues
-                  (-> attr-values
-                      (encode-attrs)
-                      (util/update-keys transform/key->attr-placeholder)))
+           attr-vals
+           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
 
            return-consumed-capacity
            (assoc :ReturnConsumedCapacity return-consumed-capacity)

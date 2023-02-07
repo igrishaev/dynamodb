@@ -580,6 +580,7 @@
                       {:user/id 1
                        :user/name "Ivan"
                        :test/kek 99
+                       :test/lol "poo"
                        :abc "test"
                        :amount 3
                        :kek/numbers #{1 3 5}})
@@ -589,17 +590,18 @@
                          table
                          {:user/id 1
                           :user/name "Ivan"}
-                         {:condition "#id = :one"
-                          :attr-names {"#id" :user/id
-                                       "#kek" :test/kek
-                                       "#numbers" :kek/numbers}
-                          :attr-values {:num 123
-                                        :one 1
-                                        :drop #{1 5}}
+                         {:sql-condition "#id = :one"
+                          :attr-keys {:id :user/id
+                                      :kek :test/kek
+                                      :numbers :kek/numbers
+                                      :lol :test/lol}
+                          :attr-vals {:num 123
+                                      :one 1
+                                      :drop #{1 5}}
                           :set {"Foobar" :num}
                           :add {"amount" :one}
                           :delete {"#numbers" :drop}
-                          :remove ["#kek" "abc"]}) ;; TODO: keyword
+                          :remove ["#kek" "abc" :lol]})
 
         resp3
         (api/get-item CLIENT
