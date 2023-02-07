@@ -33,6 +33,18 @@
 (s/def ::item
   (s/map-of ::attr any?))
 
+
+(s/def ::sql-condition ::ne-string)
+
+
+(s/def ::attr-keys
+  (s/map-of keyword? keyword?))
+
+
+(s/def ::attr-vals
+  (s/map-of keyword? any?))
+
+
 ;;
 ;; API
 ;;
@@ -51,9 +63,9 @@
          :params
          (s/nilable
           (s/keys
-           :opt-un [::condition
-                    ::attr-names
-                    ::attr-values
+           :opt-un [::sql-condition
+                    ::attr-keys
+                    ::attr-vals
                     ::return-consumed-capacity
                     ::return-item-collection-metrics
                     ::return-values]))))

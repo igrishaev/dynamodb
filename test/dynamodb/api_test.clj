@@ -533,11 +533,11 @@
         (api/delete-item CLIENT
                          table
                          {:user/id 1 :user/name "Ivan"}
-                         {:condition "#kek in (:foo, :bar, :baz)"
-                          :attr-names {"#kek" :test/kek}
-                          :attr-values {:foo 1
-                                        :bar 2
-                                        :baz 3}})
+                         {:sql-condition "#kek in (:foo, :bar, :baz)"
+                          :attr-keys {:kek :test/kek}
+                          :attr-vals {:foo 1
+                                      :bar 2
+                                      :baz 3}})
 
         resp3
         (api/get-item CLIENT
