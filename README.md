@@ -8,6 +8,15 @@ Download from http://example.com/FIXME.
 
 ## Usage
 
+## Table
+
+| sdfs | sdfsfsf | fsfsdf | sdfsdf | fsdfsf |
+|------|---------|--------|--------|--------|
+| sdfs | sdfsdf  | sdfsdf | sdfsdf | sdfsf  |
+| sdfs | sdfs    | `sdfs` | sdfsf  | sdf    |
+|      |         |        |        |        |
+
+
 FIXME: explanation
 
     $ java -jar dynamodb-0.1.0-standalone.jar [args]
