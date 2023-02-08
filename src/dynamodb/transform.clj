@@ -63,8 +63,9 @@
 
       :delete
       (str "DELETE "
-           (str/join ", " (for [[k v] form]
-                            (format "%s %s" k v)))))))
+           (str/join ", "
+                     (for [[k v] form]
+                       (format "%s %s" (keyword->name-placeholder k) v)))))))
 
 
 (defn update-expression

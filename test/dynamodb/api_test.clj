@@ -14,7 +14,9 @@
                        `api/describe-table
                        `api/put-item
                        `api/get-item
-                       `api/delete-item])
+                       `api/delete-item
+                       `api/update-item
+                       `api/query])
 
 
 (def PORT 8000)
@@ -609,7 +611,7 @@
                                       :drop #{1 5}}
                           :set {"Foobar" :num}
                           :add {"amount" :one}
-                          :delete {"#numbers" :drop}
+                          :delete {:numbers :drop}
                           :remove ["#kek" "abc" :lol]})
 
         resp3

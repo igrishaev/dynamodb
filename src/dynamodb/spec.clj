@@ -27,16 +27,21 @@
 (s/def ::table ::ne-string)
 
 
-(s/def ::attr
+(s/def ::kw-or-string
   (s/or :keyword keyword?
         :string ::ne-string))
+
+
+(s/def ::attr
+  ::kw-or-string)
 
 
 (s/def ::item
   (s/map-of ::attr any?))
 
 
-(s/def ::sql-condition ::ne-string)
+(s/def ::sql-condition
+  ::ne-string)
 
 
 (s/def ::attr-keys
@@ -52,8 +57,7 @@
 
 
 (s/def ::attrs-get
-  (s/coll-of (s/or :string ::ne-string
-                   :keyword keyword?)))
+  (s/coll-of ::kw-or-string))
 
 
 (s/def ::return-values
@@ -62,6 +66,46 @@
     const/return-values-updated-old
     const/return-values-all-new
     const/return-values-updated-new})
+
+
+(s/def ::set
+  (s/map-of ::kw-or-string ::kw-or-string))
+
+(s/def ::add
+  (s/map-of ::kw-or-string ::kw-or-string))
+
+(s/def ::remove
+  (s/coll-of ::kw-or-string))
+
+(s/def ::delete
+  (s/map-of ::kw-or-string ::kw-or-string))
+
+
+(s/def ::scan-forward?
+  boolean?)
+
+
+(s/def ::sql-filter
+  ::ne-string)
+
+
+(s/def ::limit
+  integer?)
+
+
+(s/def ::start-key
+  ::item)
+
+
+(s/def ::sql-key
+  ::ne-string)
+
+
+(s/def ::select
+  #{const/select-all-attributes
+    const/select-all-projected-attributes
+    const/select-specific-attributes
+    const/select-count})
 
 
 ;;
@@ -129,3 +173,46 @@
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
                      ::return-values])))))
+
+
+(s/fdef api/udpate-item
+  :args
+  (s/cat :client ::client
+         :table ::table
+         :key ::item
+         :params
+         (s/?
+          (s/nilable
+           (s/keys
+            :opt-un [::sql-condition
+                     ::attr-keys
+                     ::attr-vals
+                     ::set
+                     ::add
+                     ::remove
+                     ::delete
+                     ::return-consumed-capacity
+                     ::return-item-collection-metrics
+                     ::return-values])))))
+
+
+(s/fdef api/query
+  :args
+  (s/cat :client ::client
+         :table ::table
+         :params
+         (s/?
+          (s/nilable
+           (s/keys
+            :opt-un [::consistent-read?
+                     ::sql-filter
+                     ::index
+                     ::limit
+                     ::scan-forward?
+                     ::start-key
+                     ::select
+                     ::return-consumed-capacity
+                     ::sql-key
+                     ::attrs-get
+                     ::attr-keys
+                     ::attr-vals])))))
