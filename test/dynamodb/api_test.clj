@@ -16,7 +16,8 @@
                        `api/get-item
                        `api/delete-item
                        `api/update-item
-                       `api/query])
+                       `api/query
+                       `api/create-backup])
 
 
 (def PORT 8000)
@@ -824,4 +825,34 @@
                :user/name "Huan"}]}
             :UnprocessedKeys {}}
 
+           resp))))
+
+
+(deftest test-create-backup
+
+  (let [table
+        (make-table-name)
+
+        _
+        (make-tmp-table table)
+
+        _
+        (api/put-item CLIENT
+                      table
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/foo "foo"})
+
+        resp
+        (api/create-backup CLIENT table "aaa")]
+
+    (is (= {:error? true
+            :status 400
+            :path "com.amazonaws.dynamodb.v20120810"
+            :exception "UnknownOperationException"
+            :message "An unknown operation was requested."
+            :payload
+            {:BackupName "aaa"
+             :TableName table}
+            :target "CreateBackup"}
            resp))))

@@ -3,7 +3,7 @@
   BatchExecuteStatement
 + BatchGetItem
 . BatchWriteItem
-. CreateBackup
++ CreateBackup
   CreateGlobalTable
 + CreateTable
 . DeleteBackup
@@ -92,6 +92,7 @@
                 attr-keys
                 attr-vals
                 attrs-get
+                backup
                 consistent-read?
                 delete
                 index
@@ -134,6 +135,9 @@
 
       segment
       (assoc :Segment segment)
+
+      backup
+      (assoc :BackupName backup)
 
       total-segments
       (assoc :TotalSegments total-segments)
@@ -333,14 +337,33 @@
      (client/make-request client "CreateTable" params))))
 
 
-;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html#DDB-DeleteTable-request-TableName
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateBackup.html
+(defn create-backup
+
+  ([client table backup]
+   (create-backup client table backup nil))
+
+  ([client table backup options]
+
+   (-> options
+       (assoc :table table :backup backup)
+       (pre-process)
+       (->> (client/make-request client "CreateBackup"))
+       (post-process))))
+
+
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html
 (defn delete-table
-  [client table]
-  (-> nil
-      (assoc :table table)
-      (pre-process)
-      (->> (client/make-request client "DeleteTable"))
-      (post-process)))
+  ([client table]
+   (delete-table client table nil))
+
+  ([client table options]
+
+   (-> options
+       (assoc :table table)
+       (pre-process)
+       (->> (client/make-request client "DeleteTable"))
+       (post-process))))
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ListTables.html
@@ -365,12 +388,16 @@
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DescribeTable.html
 (defn describe-table
-  [client table]
-  (-> nil
-      (assoc :table table)
-      (pre-process)
-      (->> (client/make-request client "DescribeTable"))
-      (post-process)))
+
+  ([client table]
+   (describe-table client table nil))
+
+  ([client table options]
+   (-> options
+       (assoc :table table)
+       (pre-process)
+       (->> (client/make-request client "DescribeTable"))
+       (post-process))))
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html

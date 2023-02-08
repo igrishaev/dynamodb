@@ -1,7 +1,7 @@
 (ns dynamodb.spec
   (:require
-   [dynamodb.mask :as mask]
    [dynamodb.api :as api]
+   [dynamodb.mask :as mask]
    [dynamodb.constant :as const]
    [clojure.string :as str]
    [clojure.spec.alpha :as s]))
@@ -24,7 +24,12 @@
                    ::region]))
 
 
-(s/def ::table ::ne-string)
+(s/def ::table
+  ::ne-string)
+
+
+(s/def ::backup
+  ::ne-string)
 
 
 (s/def ::kw-or-string
@@ -108,6 +113,10 @@
     const/select-count})
 
 
+(s/def ::callback
+  fn?)
+
+
 ;;
 ;; API
 ;;
@@ -115,13 +124,23 @@
 (s/fdef api/delete-table
   :args
   (s/cat :client ::client
-         :table ::table))
+         :table ::table
+         :options
+         (s/?
+          (s/nilable
+           (s/keys
+            :opt-un [::callback])))))
 
 
 (s/fdef api/describe-table
   :args
   (s/cat :client ::client
-         :table ::table))
+         :table ::table
+         :options
+         (s/?
+          (s/nilable
+           (s/keys
+            :opt-un [::callback])))))
 
 
 (s/fdef api/put-item
@@ -129,7 +148,7 @@
   (s/cat :client ::client
          :table ::table
          :item ::item
-         :params
+         :options
          (s/?
           (s/nilable
            (s/keys
@@ -138,7 +157,8 @@
                      ::attr-vals
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
-                     ::return-values])))))
+                     ::return-values
+                     ::callback])))))
 
 
 (s/fdef api/get-item
@@ -146,7 +166,7 @@
   (s/cat :client ::client
          :table ::table
          :key ::item
-         :params
+         :options
          (s/?
           (s/nilable
            (s/keys
@@ -154,7 +174,8 @@
                      ::attr-keys
                      ::consistent-read?
                      ::return-consumed-capacity
-                     ::return-item-collection-metrics])))))
+                     ::return-item-collection-metrics
+                     ::callback])))))
 
 
 (s/fdef api/delete-item
@@ -162,7 +183,7 @@
   (s/cat :client ::client
          :table ::table
          :key ::item
-         :params
+         :options
          (s/?
           (s/nilable
            (s/keys
@@ -172,7 +193,8 @@
                      ::attr-vals
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
-                     ::return-values])))))
+                     ::return-values
+                     ::callback])))))
 
 
 (s/fdef api/udpate-item
@@ -180,7 +202,7 @@
   (s/cat :client ::client
          :table ::table
          :key ::item
-         :params
+         :options
          (s/?
           (s/nilable
            (s/keys
@@ -193,14 +215,15 @@
                      ::delete
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
-                     ::return-values])))))
+                     ::return-values
+                     ::callback])))))
 
 
 (s/fdef api/query
   :args
   (s/cat :client ::client
          :table ::table
-         :params
+         :options
          (s/?
           (s/nilable
            (s/keys
@@ -215,4 +238,16 @@
                      ::sql-key
                      ::attrs-get
                      ::attr-keys
-                     ::attr-vals])))))
+                     ::attr-vals
+                     ::callback])))))
+
+(s/fdef api/create-backup
+  :args
+  (s/cat :client ::client
+         :table ::table
+         :backup ::backup
+         :options
+         (s/?
+          (s/nilable
+           (s/keys
+            :opt-un [::callback])))))
