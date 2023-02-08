@@ -10,8 +10,11 @@
    [clojure.test :refer [is deftest]]))
 
 
-(spec.test/instrument `api/delete-table
-                      `api/put-item)
+(spec.test/instrument [`api/delete-table
+                       `api/describe-table
+                       `api/put-item
+                       `api/get-item
+                       `api/delete-item])
 
 
 (def PORT 8000)
