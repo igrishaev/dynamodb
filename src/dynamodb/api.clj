@@ -60,6 +60,7 @@
    java.util.List)
   (:require
    [clojure.string :as str]
+   [dynamodb.mask :as mask]
    [dynamodb.util :as util :refer [as]]
    [dynamodb.transform :as transform]
    [dynamodb.constant :as const]
@@ -254,8 +255,8 @@
          path
          (.getPath uri)]
 
-     {:access-key access-key
-      :secret-key secret-key
+     {:access-key (mask/mask access-key)
+      :secret-key (mask/mask secret-key)
       :endpoint endpoint
       :content-type "application/x-amz-json-1.0"
       :host host

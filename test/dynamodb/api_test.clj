@@ -3,6 +3,7 @@
    java.util.UUID)
   (:require
    dynamodb.spec
+   [dynamodb.mask :as mask]
    [dynamodb.constant :as const]
    [dynamodb.api :as api]
    [clojure.spec.test.alpha :as spec.test]
@@ -37,17 +38,22 @@
 
 
 (deftest test-client-ok
+
   (is (= {:path "/foo"
           :service "dynamodb"
-          :access-key "public-key"
-          :secret-key "secret-key"
           :region "voronezh"
           :host "localhost"
           :content-type "application/x-amz-json-1.0"
           :version "20120810"
           :endpoint "http://localhost:8000/foo"
           :async? false}
-         CLIENT)))
+         (dissoc CLIENT :access-key :secret-key)))
+
+  (is (-> CLIENT :access-key mask/masked?))
+  (is (-> CLIENT :secret-key mask/masked?))
+
+  (is (= "<< masked >>"
+         (pr-str (:secret-key CLIENT)))))
 
 
 (deftest test-create-table-pay-per-request

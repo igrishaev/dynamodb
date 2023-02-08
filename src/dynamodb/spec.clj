@@ -1,5 +1,6 @@
 (ns dynamodb.spec
   (:require
+   [dynamodb.mask :as mask]
    [dynamodb.api :as api]
    [clojure.string :as str]
    [clojure.spec.alpha :as s]))
@@ -9,8 +10,8 @@
   (s/and string? (complement str/blank?)))
 
 
-(s/def ::access-key ::ne-string)
-(s/def ::secret-key ::ne-string)
+(s/def ::access-key mask/masked?)
+(s/def ::secret-key mask/masked?)
 (s/def ::endpoint   ::ne-string)
 (s/def ::region     ::ne-string)
 

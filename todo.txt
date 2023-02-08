@@ -3,7 +3,6 @@
 - async handler
 - with-async?
 - with-throw
-- mask secret-key
 - write specs
 - instrument specs
 - pass http params

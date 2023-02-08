@@ -2,6 +2,7 @@
   (:import
    java.net.URI)
   (:require
+   [dynamodb.mask :as mask]
    [dynamodb.util :refer [as]]
    [clojure.java.io :as io]
    [dynamodb.time :as time]
@@ -46,8 +47,8 @@
           :payload payload
           :service service
           :region region
-          :access-key access-key
-          :secret-key secret-key})
+          :access-key (mask/unmask access-key)
+          :secret-key (mask/unmask secret-key)})
 
         headers
         {"authorization" auth-header
