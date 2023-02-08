@@ -10,3 +10,5 @@
 - write specs
 - instrument specs
 - pass http params
+- object encode json
+- when-not (= resp {})
