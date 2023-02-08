@@ -22,7 +22,8 @@
            content-type
            version
            service
-           async?]}
+           async?
+           throw?]}
    target
    data]
 
@@ -82,19 +83,28 @@
                      (.getFragment uri)
 
                      path
-                     (.getPath uri)]
+                     (.getPath uri)
 
-                 {:error? true
-                  :status status
-                  :path path
-                  :exception exception
-                  :message Message
-                  :payload data
-                  :target target})
+                     result
+                     {:error? true
+                      :status status
+                      :path path
+                      :exception exception
+                      :message Message
+                      :payload data
+                      :target target}]
+
+                 (if throw?
+                   (throw (ex-info "DynamoDB failure" result))
+                   result))
 
                data-parsed))))
 
         (as [response]
           (if async?
             response
-            @response)))))
+            (let [{:as response :keys [error]}
+                  @response]
+              (if error
+                (throw error)
+                response)))))))

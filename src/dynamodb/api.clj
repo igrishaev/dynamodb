@@ -246,8 +246,10 @@
 
   ([access-key secret-key endpoint region
     {:keys [async?
-            version]
+            version
+            throw?]
      :or {async? false
+          throw? false
           version const/version-20120810}}]
 
    (let [uri
@@ -268,7 +270,8 @@
       :service "dynamodb"
       :version version
       :region region
-      :async? async?})))
+      :async? async?
+      :throw? throw?})))
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html

@@ -21,7 +21,8 @@
   (s/keys :req-un [::access-key
                    ::secret-key
                    ::endpoint
-                   ::region]))
+                   ::region]
+          :opt-un [::throw?]))
 
 
 (s/def ::table

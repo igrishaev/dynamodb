@@ -4,4 +4,3 @@
 - with-async?
 - with-throw
 - pass http params
-- object encode json
