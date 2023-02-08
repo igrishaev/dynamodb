@@ -1,15 +1,15 @@
 (ns dynamodb.api
   "
   BatchExecuteStatement
-  BatchGetItem
-  BatchWriteItem
-  CreateBackup
++ BatchGetItem
+. BatchWriteItem
+. CreateBackup
   CreateGlobalTable
 + CreateTable
-  DeleteBackup
+. DeleteBackup
 + DeleteItem
 + DeleteTable
-  DescribeBackup
+. DescribeBackup
   DescribeContinuousBackups
   DescribeContributorInsights
   DescribeEndpoints
@@ -18,7 +18,7 @@
   DescribeGlobalTableSettings
   DescribeImport
   DescribeKinesisStreamingDestination
-  DescribeLimits
+. DescribeLimits
 + DescribeTable
   DescribeTableReplicaAutoScaling
   DescribeTimeToLive
@@ -29,22 +29,22 @@
   ExportTableToPointInTime
 + GetItem
   ImportTable
-  ListBackups
+. ListBackups
   ListContributorInsights
-  ListExports
+. ListExports
   ListGlobalTables
-  ListImports
+. ListImports
 + ListTables
-  ListTagsOfResource
+. ListTagsOfResource
 + PutItem
 + Query
   RestoreTableFromBackup
   RestoreTableToPointInTime
 + Scan
-  TagResource
+. TagResource
   TransactGetItems
   TransactWriteItems
-  UntagResource
+. UntagResource
   UpdateContinuousBackups
   UpdateContributorInsights
   UpdateGlobalTable
@@ -84,6 +84,154 @@
   (transform/encode-attr-names attr-keys))
 
 
+(defn pre-process [params]
+
+  (let [{:keys [attr-keys
+                attr-vals
+                attrs-get
+                request-items
+                consistent-read?
+                index
+                item
+                limit
+                sql-key
+                set
+                add
+                remove
+                delete
+                pk
+                keys
+                segment
+                total-segments
+                return-consumed-capacity
+                return-item-collection-metrics
+                return-values
+                scan-forward?
+                select
+                sql-condition
+                sql-filter
+                start-key
+                start-table
+                table]}
+        params]
+
+    (cond-> {}
+
+      (some? consistent-read?)
+      (assoc :ConsistentRead consistent-read?)
+
+      sql-filter
+      (assoc :FilterExpression sql-filter)
+
+      sql-key
+      (assoc :KeyConditionExpression sql-key)
+
+      start-key
+      (assoc :ExclusiveStartKey (encode-attrs start-key))
+
+      segment
+      (assoc :Segment segment)
+
+      total-segments
+      (assoc :TotalSegments total-segments)
+
+      keys
+      (assoc :Keys (mapv encode-attrs keys))
+
+      request-items
+      (assoc :RequestItems
+             (reduce-kv
+              (fn [acc table params]
+                (assoc acc table (pre-process params)))
+              {}
+              request-items))
+
+      (some? scan-forward?)
+      (assoc :ScanIndexForward scan-forward?)
+
+      select
+      (assoc :Select select)
+
+      index
+      (assoc :IndexName index)
+
+      (or set add remove delete)
+      (as [params']
+        (let [update-expression
+              (transform/update-expression
+               {:set set
+                :add add
+                :remove remove
+                :delete delete})]
+          (assoc params' :UpdateExpression update-expression)))
+
+      start-table
+      (assoc :ExclusiveStartTableName start-table)
+
+      limit
+      (assoc :Limit limit)
+
+      sql-condition
+      (assoc :ConditionExpression sql-condition)
+
+      table
+      (assoc :TableName table)
+
+      attrs-get
+      (assoc :ProjectionExpression (-enc-attr-to-get attrs-get))
+
+      item
+      (assoc :Item (encode-attrs item))
+
+      pk
+      (assoc :Key (encode-attrs pk))
+
+      attr-keys
+      (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
+
+      attr-vals
+      (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
+
+      return-consumed-capacity
+      (assoc :ReturnConsumedCapacity return-consumed-capacity)
+
+      return-item-collection-metrics
+      (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
+
+      return-values
+      (assoc :ReturnValues return-values))))
+
+
+(defn- -decode-items [items]
+  (mapv decode-attrs items))
+
+
+(defn post-process [response]
+  (when-not (= response {})
+    (cond-> response
+
+      (:Item response)
+      (update :Item decode-attrs)
+
+      (:Attributes response)
+      (update :Attributes decode-attrs)
+
+      (:Items response)
+      (update :Items -decode-items)
+
+      (:Responses response)
+      (update :Responses util/update-vals -decode-items)
+
+      (:UnprocessedKeys response)
+      (update :UnprocessedKeys
+              util/update-vals
+              (fn [entry]
+                (update entry :Keys -decode-items)))
+
+      (:LastEvaluatedKey response)
+      (update :LastEvaluatedKey decode-attrs))))
+
+
 (defn make-client
 
   ([access-key secret-key endpoint region]
@@ -116,22 +264,6 @@
       :async? async?})))
 
 
-;; BatchGetItem
-;; DeleteItem
-;; UpdateItem
-;; Query
-;; Scan
-;; BatchWriteItem
-
-;; CreateBackup
-;; CreateGlobalTable
-;; DeleteBackup
-;; DescribeBackup
-;; ExecuteStatement
-;; ExecuteTransaction
-
-
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html
 (defn create-table
 
@@ -198,383 +330,226 @@
      (client/make-request client "CreateTable" params))))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteTable.html#DDB-DeleteTable-request-TableName
 (defn delete-table
   [client table]
-  (let [params {:TableName table}]
-    (client/make-request client "DeleteTable" params)))
+  (-> nil
+      (assoc :table table)
+      (pre-process)
+      (->> (client/make-request client "DeleteTable"))
+      (post-process)))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ListTables.html
 (defn list-tables
+
+  {:arglists
+   '([client]
+     [client
+      {:keys [^Long limit
+              ^String start-table]}])}
 
   ([client]
    (list-tables client nil))
 
-  ([client {:keys [^Long limit
-                   ^String start-table]}]
-   (let [params
-         (cond-> {}
+  ([client options]
 
-           start-table
-           (assoc :ExclusiveStartTableName start-table)
-
-           limit
-           (assoc :Limit limit))]
-
-     (client/make-request client "ListTables" params))))
+   (-> options
+       (pre-process)
+       (->> (client/make-request client "ListTables"))
+       (post-process))))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DescribeTable.html
 (defn describe-table
   [client table]
-  (let [params {:TableName table}]
-    (client/make-request client "DescribeTable" params)))
+  (-> nil
+      (assoc :table table)
+      (pre-process)
+      (->> (client/make-request client "DescribeTable"))
+      (post-process)))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html
 (defn put-item
+
+  {:arglists
+   '([client table item]
+     [client table item
+      {:keys [^String sql-condition
+              ^Map    attr-keys
+              ^Map    attr-vals
+              ^String return-consumed-capacity
+              ^String return-item-collection-metrics
+              ^String return-values]}])}
 
   ([client table item]
    (put-item client table item nil))
 
-  ([client table item {:keys [^String sql-condition
-                              ^Map    attr-keys
-                              ^Map    attr-vals
-                              ^String return-consumed-capacity
-                              ^String return-item-collection-metrics
-                              ^String return-values]}]
+  ([client table item options]
 
-   (let [params
-         (cond-> {:TableName table
-                  :Item (encode-attrs item)}
-
-           sql-condition
-           (assoc :ConditionExpression sql-condition)
-
-           attr-keys
-           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
-
-           attr-vals
-           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
-
-           return-consumed-capacity
-           (assoc :ReturnConsumedCapacity return-consumed-capacity)
-
-           return-item-collection-metrics
-           (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
-
-           return-values
-           (assoc :ReturnValues return-values))
-
-         response
-         (client/make-request client "PutItem" params)]
-
-     (cond-> response
-       (:Attributes response)
-       (update :Attributes decode-attrs)))))
+   (-> options
+       (assoc :table table :item item)
+       (pre-process)
+       (->> (client/make-request client "PutItem"))
+       (post-process))))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html
 (defn get-item
+
+  {:arglists
+   '([client table pk]
+     [client table pk {:keys [^List    attrs-get
+                              ^Map     attr-keys
+                              ^Boolean consistent-read?
+                              ^String  return-consumed-capacity]}])}
 
   ([client table pk]
    (get-item client table pk nil))
 
-  ([client table pk {:keys [^List    attrs-get
-                            ^Map     attr-keys
-                            ^Boolean consistent-read?
-                            ^String  return-consumed-capacity]}]
+  ([client table pk options]
 
-   (let [params
-         (cond-> {:TableName table
-                  :Key (encode-attrs pk)}
-
-           attr-keys
-           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
-
-           (some? consistent-read?)
-           (assoc :ConsistentRead consistent-read?)
-
-           return-consumed-capacity
-           (assoc :ReturnConsumedCapacity return-consumed-capacity)
-
-           attrs-get
-           (assoc :ProjectionExpression (-enc-attr-to-get attrs-get)))
-
-         response
-         (client/make-request client "GetItem" params)]
-
-     (when-not (= response {})
-       (cond-> response
-         (:Item response)
-         (update :Item decode-attrs))))))
+   (-> options
+       (assoc :table table :pk pk)
+       (pre-process)
+       (->> (client/make-request client "GetItem"))
+       (post-process))))
 
 
-;; ok
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchGetItem.html
+(defn batch-get-item
+
+  {:arglists
+   '([client table->options]
+     [client table->options
+      {:keys [^String return-consumed-capacity]}])}
+
+  ([client table->options]
+   (batch-get-item client table->options nil))
+
+  ([client table->options options]
+
+   (-> options
+       (assoc :request-items table->options)
+       (pre-process)
+       (->> (client/make-request client "BatchGetItem"))
+       (post-process))))
+
+
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DeleteItem.html
 (defn delete-item
+
+  {:arglists
+   '([client table pk]
+     [client table pk
+      {:keys [^String sql-condition
+              ^Map    attr-keys
+              ^Map    attr-vals
+              ^String return-consumed-capacity
+              ^String return-item-collection-metrics
+              ^String return-values]}])}
 
   ([client table pk]
    (delete-item client table pk nil))
 
-  ([client table pk {:keys [^String sql-condition
-                            ^Map    attr-keys
-                            ^Map    attr-vals
-                            ^String return-consumed-capacity
-                            ^String return-item-collection-metrics
-                            ^String return-values]}]
+  ([client table pk options]
 
-   (let [params
-         (cond-> {:TableName table
-                  :Key (encode-attrs pk)}
-
-           sql-condition
-           (assoc :ConditionExpression sql-condition)
-
-           attr-keys
-           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
-
-           attr-vals
-           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
-
-           return-consumed-capacity
-           (assoc :ReturnConsumedCapacity return-consumed-capacity)
-
-           return-item-collection-metrics
-           (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
-
-           return-values
-           (assoc :ReturnValues return-values))
-
-         response
-         (client/make-request client "DeleteItem" params)]
-
-     (cond
-
-       (= response {})
-       nil
-
-       (:Attributes response)
-       (update response :Attributes decode-attrs)
-
-       :else
-       response))))
+   (-> options
+       (assoc :table table :pk pk)
+       (pre-process)
+       (->> (client/make-request client "DeleteItem"))
+       (post-process))))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_UpdateItem.html
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.UpdateExpressions.html
 (defn update-item
 
-  ([client table item]
-   (update-item client table item nil))
+  {:arglists
+   '([client table pk]
+     [client table pk
+      {:keys [^String sql-condition
+              ^Map    attr-keys
+              ^Map    attr-vals
+              ^Map    set
+              ^Map    add
+              ^List   remove
+              ^Map    delete
+              ^String return-consumed-capacity
+              ^String return-item-collection-metrics
+              ^String return-values]}])}
 
-  ([client table item {:keys [sql-condition
-                              attr-keys
-                              attr-vals
-                              set
-                              add
-                              remove
-                              delete
-                              return-consumed-capacity
-                              return-item-collection-metrics
-                              return-values]}]
+  ([client table pk]
+   (update-item client table pk nil))
 
-   (let [params
-         (cond-> {:TableName table
-                  :Key (encode-attrs item)}
+  ([client table pk options]
 
-           sql-condition
-           (assoc :ConditionExpression sql-condition)
-
-           attr-keys
-           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
-
-           attr-vals
-           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
-
-           return-consumed-capacity
-           (assoc :ReturnConsumedCapacity return-consumed-capacity)
-
-           return-item-collection-metrics
-           (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
-
-           return-values
-           (assoc :ReturnValues return-values)
-
-           (or set add remove delete)
-           (as [params']
-             (let [update-expression
-                   (transform/update-expression
-                    {:set set
-                     :add add
-                     :remove remove
-                     :delete delete})]
-               (assoc params' :UpdateExpression update-expression))))
-
-         response
-         (client/make-request client "UpdateItem" params)]
-
-     (cond
-
-       (= response {})
-       nil
-
-       (:Attributes response)
-       (update response :Attributes decode-attrs)
-
-       :else
-       response))))
+   (-> options
+       (assoc :table table :pk pk)
+       (pre-process)
+       (->> (client/make-request client "UpdateItem"))
+       (post-process))))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
 (defn query
 
+  {:arglists
+   '([client table]
+     [client table
+      {:keys [^Boolean consistent-read?
+              ^String  sql-filter
+              ^String  index
+              ^Long    limit
+              ^Boolean scan-forward?
+              ^Map     start-key
+              ^String  select
+              ^Boolean return-consumed-capacity
+              ^String  sql-key
+              ^List    attrs-get
+              ^Map     attr-keys
+              ^Map     attr-vals]}])}
+
   ([client table]
    (query client table nil))
 
-  ([client table {:keys [^Boolean consistent-read?
-                         ^String  sql-filter
-                         ^String  index
-                         ^Long    limit
-                         ^Boolean scan-forward?
-                         ^Map     start-key
-                         ^String  select
-                         ^Boolean return-consumed-capacity
-                         ^String  sql-key
-                         ^List    attrs-get
-                         ^Map     attr-keys
-                         ^Map     attr-vals]}]
+  ([client table options]
 
-   (let [params
-         (cond-> {:TableName table}
-
-           (some? consistent-read?)
-           (assoc :ConsistentRead consistent-read?)
-
-           sql-filter
-           (assoc :FilterExpression sql-filter)
-
-           index
-           (assoc :IndexName index)
-
-           limit
-           (assoc :Limit limit)
-
-           (some? scan-forward?)
-           (assoc :ScanIndexForward scan-forward?)
-
-           start-key
-           (assoc :ExclusiveStartKey (encode-attrs start-key))
-
-           select
-           (assoc :Select select)
-
-           attrs-get
-           (assoc :ProjectionExpression (-enc-attr-to-get attrs-get))
-
-           attr-keys
-           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
-
-           attr-vals
-           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
-
-           return-consumed-capacity
-           (assoc :ReturnConsumedCapacity return-consumed-capacity)
-
-           sql-key
-           (assoc :KeyConditionExpression sql-key))
-
-         response
-         (client/make-request client "Query" params)]
-
-     (cond-> response
-
-       (:Items response)
-       (update :Items
-               (fn [items]
-                 (mapv decode-attrs items)))
-
-       (:LastEvaluatedKey response)
-       (update :LastEvaluatedKey decode-attrs)))))
+   (-> options
+       (assoc :table table)
+       (pre-process)
+       (->> (client/make-request client "Query"))
+       (post-process))))
 
 
-;; ok
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
 (defn scan
+
+  {:arglists
+   '([client table]
+     [client table
+      {:keys [^Map     attr-keys
+              ^Map     attr-vals
+              ^List    attrs-get
+              ^Boolean consistent-read?
+              ^String  sql-filter
+              ^Boolean index
+              ^Long    limit
+              ^String  return-consumed-capacity
+              ^Long    segment
+              ^String  select
+              ^Map     start-key
+              ^Long    total-segments]}])}
 
   ([client table]
    (scan client table nil))
 
-  ([client table {:keys [^Map     attr-keys
-                         ^Map     attr-vals
-                         ^List    attrs-get
-                         ^Boolean consistent-read?
-                         ^String  sql-filter
-                         ^Boolean index
-                         ^Long    limit
-                         ^String  return-consumed-capacity
-                         ^Long    segment
-                         ^String  select
-                         ^Map     start-key
-                         ^Long    total-segments]}]
+  ([client table options]
 
-   (let [params
-         (cond-> {:TableName table}
-
-           (some? consistent-read?)
-           (assoc :ConsistentRead consistent-read?)
-
-           start-key
-           (assoc :ExclusiveStartKey (encode-attrs start-key))
-
-           attr-keys
-           (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
-
-           attr-vals
-           (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
-
-           index
-           (assoc :IndexName index)
-
-           limit
-           (assoc :Limit limit)
-
-           select
-           (assoc :Select select)
-
-           return-consumed-capacity
-           (assoc :ReturnConsumedCapacity return-consumed-capacity)
-
-           segment
-           (assoc :Segment segment)
-
-           total-segments
-           (assoc :TotalSegments total-segments)
-
-           sql-filter
-           (assoc :FilterExpression sql-filter)
-
-           attrs-get
-           (assoc :ProjectionExpression (-enc-attr-to-get attrs-get)))
-
-         response
-         (client/make-request client "Scan" params)]
-
-     (cond-> response
-
-       (:Items response)
-       (update :Items
-               (fn [items]
-                 (mapv decode-attrs items)))
-
-       (:LastEvaluatedKey response)
-       (update :LastEvaluatedKey decode-attrs)))))
+   (-> options
+       (assoc :table table)
+       (pre-process)
+       (->> (client/make-request client "Scan"))
+       (post-process))))

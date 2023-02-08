@@ -275,7 +275,7 @@
                        :user/name "Ivan"}
                       {:return-values const/return-values-all-old})]
 
-    (is (= {} resp1))
+    (is (nil? resp1))
 
     (is (= {:Attributes
             {:user/id 1
@@ -320,7 +320,7 @@
                        :user/name "Ivan"}
                       {:return-values const/return-values-all-old})]
 
-    (is (= {} resp1))
+    (is (nil? resp1))
 
     (is (= {:Attributes #:user{:id 1
                                :name "Ivan"
@@ -759,3 +759,58 @@
             :ScannedCount 1}
 
            resp2))))
+
+
+(deftest test-batch-get-item
+
+  (let [table1
+        (make-table-name)
+
+        table2
+        (make-table-name)
+
+        _
+        (make-tmp-table table1)
+
+        _
+        (make-tmp-table table2)
+
+        _
+        (api/put-item CLIENT
+                      table1
+                      {:user/id 1
+                       :user/name "Ivan"
+                       :test/foo "foo"})
+
+        _
+        (api/put-item CLIENT
+                      table2
+                      {:user/id 2
+                       :user/name "Huan"
+                       :test/foo "bar"})
+
+        resp
+        (api/batch-get-item CLIENT
+                            {table1 {:keys [{:user/id 1
+                                             :user/name "Ivan"}]
+                                     :attr-keys {:id :user/id
+                                                 :foo :test/foo}
+                                     :attrs-get [:id :foo]}
+                             table2 {:keys [{:user/id 2
+                                             :user/name "Huan"}
+                                            {:user/id 99
+                                             :user/name "Foo"}]
+                                     :attrs-get [:name :foo]
+                                     :attr-keys {:name :user/name
+                                                 :foo :test/foo}}})]
+
+    (is (= {:Responses
+            {(keyword table1)
+             [{:user/id 1
+               :test/foo "foo"}]
+             (keyword table2)
+             [{:test/foo "bar"
+               :user/name "Huan"}]}
+            :UnprocessedKeys {}}
+
+           resp))))

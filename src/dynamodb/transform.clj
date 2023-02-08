@@ -30,6 +30,17 @@
                     {:key k}))))
 
 
+(defn keyword->name-placeholder [k]
+  (cond
+    (keyword? k)
+    (format "#%s" (name k))
+    (string? k)
+    k
+    :else
+    (throw (ex-info "Wrong attribute placeholder"
+                    {:key k}))))
+
+
 (defn build-expr [tag form]
   (when form
     (case tag
@@ -41,7 +52,9 @@
 
       :remove
       (str "REMOVE "
-           (str/join ", " form))
+           (->> form
+                (map keyword->name-placeholder)
+                (str/join ", ")))
 
       :add
       (str "ADD "
@@ -65,17 +78,6 @@
               nil
               tag->form)]
     (str/join " " (reverse exprs))))
-
-
-(defn keyword->name-placeholder [k]
-  (cond
-    (keyword? k)
-    (format "#%s" (name k))
-    (string? k)
-    k
-    :else
-    (throw (ex-info "Wrong attribute placeholder"
-                    {:key k}))))
 
 
 (defn encode-attr-names [mapping]

@@ -18,16 +18,10 @@
          (update-expression
           {:set {:foo "123" :bar :test}})))
 
-  (is (= "SET :foo = 1 ADD :amount :one, :count two REMOVE :this, that, more DELETE :colors :red"
+  (is (= "SET :foo = 1 ADD :amount :one, :count two REMOVE #this, that, more DELETE :colors :red"
          (update-expression
           {:set {:foo 1}
            :add {:amount :one
                  :count "two"}
            :remove [:this "that" "more"]
-           :delete {:colors :red}})))
-
-
-
-
-
-)
+           :delete {:colors :red}}))))
