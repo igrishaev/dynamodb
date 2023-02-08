@@ -86,33 +86,35 @@
 
 (defn pre-process [params]
 
-  (let [{:keys [attr-keys
+  (let [{:keys [
+                add
+                attr-keys
                 attr-vals
                 attrs-get
-                request-items
                 consistent-read?
+                delete
                 index
                 item
-                limit
-                sql-key
-                set
-                add
-                remove
-                delete
-                pk
+                key
                 keys
-                segment
-                total-segments
+                limit
+                remove
+                request-items
                 return-consumed-capacity
                 return-item-collection-metrics
                 return-values
                 scan-forward?
+                segment
                 select
+                set
                 sql-condition
                 sql-filter
+                sql-key
                 start-key
                 start-table
-                table]}
+                table
+                total-segments
+                ]}
         params]
 
     (cond-> {}
@@ -183,8 +185,8 @@
       item
       (assoc :Item (encode-attrs item))
 
-      pk
-      (assoc :Key (encode-attrs pk))
+      key
+      (assoc :Key (encode-attrs key))
 
       attr-keys
       (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
@@ -399,19 +401,19 @@
 (defn get-item
 
   {:arglists
-   '([client table pk]
-     [client table pk {:keys [^List    attrs-get
-                              ^Map     attr-keys
-                              ^Boolean consistent-read?
-                              ^String  return-consumed-capacity]}])}
+   '([client table key]
+     [client table key {:keys [^List    attrs-get
+                               ^Map     attr-keys
+                               ^Boolean consistent-read?
+                               ^String  return-consumed-capacity]}])}
 
-  ([client table pk]
-   (get-item client table pk nil))
+  ([client table key]
+   (get-item client table key nil))
 
-  ([client table pk options]
+  ([client table key options]
 
    (-> options
-       (assoc :table table :pk pk)
+       (assoc :table table :key key)
        (pre-process)
        (->> (client/make-request client "GetItem"))
        (post-process))))
@@ -441,8 +443,8 @@
 (defn delete-item
 
   {:arglists
-   '([client table pk]
-     [client table pk
+   '([client table key]
+     [client table key
       {:keys [^String sql-condition
               ^Map    attr-keys
               ^Map    attr-vals
@@ -450,13 +452,13 @@
               ^String return-item-collection-metrics
               ^String return-values]}])}
 
-  ([client table pk]
-   (delete-item client table pk nil))
+  ([client table key]
+   (delete-item client table key nil))
 
-  ([client table pk options]
+  ([client table key options]
 
    (-> options
-       (assoc :table table :pk pk)
+       (assoc :table table :key key)
        (pre-process)
        (->> (client/make-request client "DeleteItem"))
        (post-process))))
@@ -467,8 +469,8 @@
 (defn update-item
 
   {:arglists
-   '([client table pk]
-     [client table pk
+   '([client table key]
+     [client table key
       {:keys [^String sql-condition
               ^Map    attr-keys
               ^Map    attr-vals
@@ -480,13 +482,13 @@
               ^String return-item-collection-metrics
               ^String return-values]}])}
 
-  ([client table pk]
-   (update-item client table pk nil))
+  ([client table key]
+   (update-item client table key nil))
 
-  ([client table pk options]
+  ([client table key options]
 
    (-> options
-       (assoc :table table :pk pk)
+       (assoc :table table :key key)
        (pre-process)
        (->> (client/make-request client "UpdateItem"))
        (post-process))))
