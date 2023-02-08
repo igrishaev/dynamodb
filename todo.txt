@@ -3,7 +3,5 @@
 - async handler
 - with-async?
 - with-throw
-- write specs
-- instrument specs
 - pass http params
 - object encode json

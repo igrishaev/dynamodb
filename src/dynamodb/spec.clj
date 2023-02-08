@@ -65,14 +65,6 @@
   (s/coll-of ::kw-or-string))
 
 
-(s/def ::return-values
-  #{const/return-values-none
-    const/return-values-all-old
-    const/return-values-updated-old
-    const/return-values-all-new
-    const/return-values-updated-new})
-
-
 (s/def ::set
   (s/map-of ::kw-or-string ::kw-or-string))
 
@@ -111,6 +103,25 @@
     const/select-all-projected-attributes
     const/select-specific-attributes
     const/select-count})
+
+
+(s/def ::return-values
+  #{const/return-values-none
+    const/return-values-all-old
+    const/return-values-updated-old
+    const/return-values-all-new
+    const/return-values-updated-new})
+
+
+(s/def ::return-consumed-capacity
+  #{const/return-consumed-capacity-indexes
+    const/return-consumed-capacity-total
+    const/return-consumed-capacity-none})
+
+
+(s/def ::return-item-collection-metrics
+  #{const/return-item-collection-metrics-size
+    const/return-item-collection-metrics-none})
 
 
 (s/def ::callback
@@ -240,6 +251,7 @@
                      ::attr-keys
                      ::attr-vals
                      ::callback])))))
+
 
 (s/fdef api/create-backup
   :args
