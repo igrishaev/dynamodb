@@ -61,7 +61,7 @@
   (:require
    [clojure.string :as str]
    [dynamodb.mask :as mask]
-   [dynamodb.util :as util :refer [as]]
+   [dynamodb.util :as util]
    [dynamodb.transform :as transform]
    [dynamodb.constant :as const]
    [dynamodb.client :as client]
@@ -163,14 +163,14 @@
       (assoc :IndexName index)
 
       (or set add remove delete)
-      (as [params']
-        (let [update-expression
-              (transform/update-expression
-               {:set set
-                :add add
-                :remove remove
-                :delete delete})]
-          (assoc params' :UpdateExpression update-expression)))
+      (as-> params'
+          (let [update-expression
+                (transform/update-expression
+                 {:set set
+                  :add add
+                  :remove remove
+                  :delete delete})]
+            (assoc params' :UpdateExpression update-expression)))
 
       start-table
       (assoc :ExclusiveStartTableName start-table)
@@ -245,11 +245,9 @@
    (make-client access-key secret-key endpoint region nil))
 
   ([access-key secret-key endpoint region
-    {:keys [async?
-            version
-            throw?]
-     :or {async? false
-          throw? false
+    {:keys [throw?
+            version]
+     :or {throw? false
           version const/version-20120810}}]
 
    (let [uri
@@ -270,7 +268,6 @@
       :service "dynamodb"
       :version version
       :region region
-      :async? async?
       :throw? throw?})))
 
 
@@ -309,13 +306,13 @@
            (assoc :BillingMode billing-mode)
 
            provisioned-throughput
-           (as [params']
-             (let [[read-units write-units]
-                   provisioned-throughput]
-               (assoc params'
-                      :ProvisionedThroughput
-                      {:ReadCapacityUnits read-units
-                       :WriteCapacityUnits write-units})))
+           (as-> params'
+               (let [[read-units write-units]
+                     provisioned-throughput]
+                 (assoc params'
+                        :ProvisionedThroughput
+                        {:ReadCapacityUnits read-units
+                         :WriteCapacityUnits write-units})))
 
            table-class
            (assoc :TableClass table-class)

@@ -52,7 +52,6 @@
           :content-type "application/x-amz-json-1.0"
           :version "20120810"
           :endpoint "http://localhost:8000/foo"
-          :async? false
           :throw? false}
          (dissoc CLIENT :access-key :secret-key)))
 
@@ -874,32 +873,3 @@
             clojure.lang.ExceptionInfo
             #"DynamoDB failure"
             (api/create-backup client table "aaa")))))
-
-
-(deftest test-no-throw-async
-
-  (let [capture!
-        (atom nil)
-
-
-        table
-        (make-table-name)
-
-        _
-        (make-tmp-table table)
-
-        resp
-        (api/put-item CLIENT
-                      table
-                      {:user/id 1
-                       :user/name "Ivan"
-                       :test/foo "foo"}
-                      {:callback
-                       (fn [_client result]
-                         (reset! capture! {:result result}))})]
-
-    (is (nil? resp))
-
-    (is (= 1 @capture!))
-
-    ))

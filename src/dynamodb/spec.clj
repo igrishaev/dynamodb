@@ -125,10 +125,6 @@
     const/return-item-collection-metrics-none})
 
 
-(s/def ::callback
-  fn?)
-
-
 ;;
 ;; API
 ;;
@@ -140,8 +136,7 @@
          :options
          (s/?
           (s/nilable
-           (s/keys
-            :opt-un [::callback])))))
+           (s/map-of keyword? any?)))))
 
 
 (s/fdef api/describe-table
@@ -151,8 +146,7 @@
          :options
          (s/?
           (s/nilable
-           (s/keys
-            :opt-un [::callback])))))
+           (s/map-of keyword? any?)))))
 
 
 (s/fdef api/put-item
@@ -169,8 +163,7 @@
                      ::attr-vals
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
-                     ::return-values
-                     ::callback])))))
+                     ::return-values])))))
 
 
 (s/fdef api/get-item
@@ -186,8 +179,7 @@
                      ::attr-keys
                      ::consistent-read?
                      ::return-consumed-capacity
-                     ::return-item-collection-metrics
-                     ::callback])))))
+                     ::return-item-collection-metrics])))))
 
 
 (s/fdef api/delete-item
@@ -205,8 +197,7 @@
                      ::attr-vals
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
-                     ::return-values
-                     ::callback])))))
+                     ::return-values])))))
 
 
 (s/fdef api/udpate-item
@@ -227,8 +218,7 @@
                      ::delete
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
-                     ::return-values
-                     ::callback])))))
+                     ::return-values])))))
 
 
 (s/fdef api/query
@@ -250,8 +240,7 @@
                      ::sql-key
                      ::attrs-get
                      ::attr-keys
-                     ::attr-vals
-                     ::callback])))))
+                     ::attr-vals])))))
 
 
 (s/fdef api/create-backup
@@ -262,5 +251,4 @@
          :options
          (s/?
           (s/nilable
-           (s/keys
-            :opt-un [::callback])))))
+           (s/map-of keyword? any?)))))

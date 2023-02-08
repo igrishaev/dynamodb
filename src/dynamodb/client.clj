@@ -3,7 +3,6 @@
    java.net.URI)
   (:require
    [dynamodb.mask :as mask]
-   [dynamodb.util :refer [as]]
    [clojure.java.io :as io]
    [dynamodb.time :as time]
    [cheshire.core :as json]
@@ -22,7 +21,6 @@
            content-type
            version
            service
-           async?
            throw?]}
    target
    data]
@@ -64,7 +62,6 @@
          :as :stream}
 
         (http/request
-
          (fn [{:keys [status ^InputStream body]}]
 
            (let [data-parsed
@@ -83,28 +80,29 @@
                      (.getFragment uri)
 
                      path
-                     (.getPath uri)
+                     (.getPath uri)]
 
-                     result
-                     {:error? true
-                      :status status
-                      :path path
-                      :exception exception
-                      :message Message
-                      :payload data
-                      :target target}]
-
-                 (if throw?
-                   (throw (ex-info "DynamoDB failure" result))
-                   result))
+                 {:error? true
+                  :status status
+                  :path path
+                  :exception exception
+                  :message Message
+                  :payload data
+                  :target target})
 
                data-parsed))))
 
-        (as [response]
-          (if async?
-            response
-            (let [{:as response :keys [error]}
+        (as-> response
+            (let [{:as response :keys [error error?]}
                   @response]
-              (if error
+
+              (cond
+
+                error
                 (throw error)
-                response)))))))
+
+                (and error? throw?)
+                (throw (ex-info "DynamoDB failure" response))
+
+                :else
+                response))))))
