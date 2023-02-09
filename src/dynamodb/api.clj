@@ -41,7 +41,7 @@
   RestoreTableFromBackup
   RestoreTableToPointInTime
 + Scan
-. TagResource
++ TagResource
   TransactGetItems
   TransactWriteItems
 . UntagResource
@@ -117,6 +117,7 @@
                 start-key
                 start-table
                 table
+                tags
                 total-segments
                 ]}
         params]
@@ -146,6 +147,11 @@
 
       keys
       (assoc :Keys (mapv encode-attrs keys))
+
+      tags
+      (assoc :Tags (for [[k v] tags]
+                     {:Key k
+                      :Value v}))
 
       backup-arn
       (assoc :BackupArn backup-arn)

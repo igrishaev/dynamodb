@@ -892,4 +892,35 @@
 
 (deftest test-tag-resource
 
-  )
+  (let [table
+        (make-table-name)
+
+        resp1
+        (make-tmp-table table)
+
+        arn
+        (-> resp1 :TableDescription :TableArn)
+
+        resp2
+        (api/tag-resource CLIENT
+                          arn
+                          {:aaa/foo "test"
+                           :bbb/test "some/keyword"
+                           "hello" "3"})]
+
+    (is (= {:error? true
+            :status 400
+            :path "com.amazonaws.dynamodb.v20120810"
+            :exception "UnknownOperationException"
+            :message "Tagging is not currently supported in DynamoDB Local."
+            :payload
+            {:Tags
+             #{{:Key :aaa/foo :Value "test"}
+               {:Key :bbb/test :Value "some/keyword"}
+               {:Key "hello" :Value "3"}}
+             :ResourceArn ::DUMMY}
+            :target "TagResource"}
+
+           (-> resp2
+               (assoc-in [:payload :ResourceArn] ::DUMMY)
+               (update-in [:payload :Tags] set))))))
