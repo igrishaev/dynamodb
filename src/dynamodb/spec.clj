@@ -107,6 +107,14 @@
   ::ne-string)
 
 
+(s/def ::attr-defs
+  map? ;; todo
+  )
+
+(s/def ::key-schema
+  map?) ;; todo
+
+
 (s/def ::tags
   (s/map-of ::kw-or-string ::kw-or-string))
 
@@ -285,3 +293,18 @@
          (s/?
           (s/nilable
            (s/map-of keyword? any?)))))
+
+
+(s/fdef api/create-table
+  :args
+  (s/cat :client ::client
+         :table ::table
+         :attr-defs ::attr-defs
+         :key-schema ::key-schema
+         :options
+         (s/?
+          (s/nilable
+           (s/keys
+            :opt-un [::tags])))))
+
+;; todo: set specs

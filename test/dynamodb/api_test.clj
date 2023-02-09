@@ -10,16 +10,18 @@
    [clojure.test :refer [is deftest]]))
 
 
-(spec.test/instrument [`api/delete-table
-                       `api/describe-table
-                       `api/put-item
-                       `api/get-item
-                       `api/delete-item
-                       `api/update-item
-                       `api/query
-                       `api/create-backup
-                       `api/describe-backup
-                       `api/tag-resource])
+(spec.test/instrument
+ [`api/create-backup
+  `api/create-table
+  `api/delete-item
+  `api/delete-table
+  `api/describe-backup
+  `api/describe-table
+  `api/get-item
+  `api/put-item
+  `api/query
+  `api/tag-resource
+  `api/update-item])
 
 
 (def PORT 8000)

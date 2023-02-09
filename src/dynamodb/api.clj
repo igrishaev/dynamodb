@@ -89,18 +89,22 @@
 
   (let [{:keys [
                 add
+                attr-defs
                 attr-keys
                 attr-vals
                 attrs-get
                 backup
                 backup-arn
+                billing-mode
                 consistent-read?
                 delete
                 index
                 item
                 key
+                key-schema
                 keys
                 limit
+                provisioned-throughput
                 remove
                 request-items
                 resource-arn
@@ -117,6 +121,7 @@
                 start-key
                 start-table
                 table
+                table-class
                 tags
                 total-segments
                 ]}
@@ -141,6 +146,33 @@
 
       backup
       (assoc :BackupName backup)
+
+      table-class
+      (assoc :TableClass table-class)
+
+      billing-mode
+      (assoc :BillingMode billing-mode)
+
+      key-schema
+      (assoc :KeySchema
+             (for [[attr-name key-type] key-schema]
+               {:AttributeName attr-name
+                :KeyType key-type}))
+
+      attr-defs
+      (assoc :AttributeDefinitions
+             (for [[attr-name attr-type] attr-defs]
+               {:AttributeName attr-name
+                :AttributeType attr-type}))
+
+      provisioned-throughput
+      (as-> params'
+          (let [[read-units write-units]
+                provisioned-throughput]
+            (assoc params'
+                   :ProvisionedThroughput
+                   {:ReadCapacityUnits read-units
+                    :WriteCapacityUnits write-units})))
 
       total-segments
       (assoc :TotalSegments total-segments)
@@ -288,67 +320,33 @@
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html
 (defn create-table
 
-  ([client table attrs key-schema]
-   (create-table client table attrs key-schema nil))
+  {:arglists
+   '([client]
+     [client
+      {:keys [^Map    tags
+              ^String table-class
+              ^String billing-mode
+              ^List   provisioned-throughput
 
-  ([client table attrs key-schema
-    {:keys [tags
-            table-class
-            billing-mode
-            provisioned-throughput
-            GlobalSecondaryIndexes
-            LocalSecondaryIndexes
-            SSESpecification
-            StreamSpecification]}]
+              ;; GlobalSecondaryIndexes
+              ;; LocalSecondaryIndexes
+              ;; SSESpecification
+              ;; StreamSpecification
 
-   (let [AttributeDefinitions
-         (for [[attr-name attr-type] attrs]
-           {:AttributeName attr-name
-            :AttributeType attr-type})
+              ]}])}
 
-         KeySchema
-         (for [[attr-name key-type] key-schema]
-           {:AttributeName attr-name
-            :KeyType key-type})
+  ([client table attr-defs key-schema]
+   (create-table client table attr-defs key-schema nil))
 
-         params
-         (cond-> {:AttributeDefinitions AttributeDefinitions
-                  :KeySchema KeySchema
-                  :TableName table}
+  ([client table attr-defs key-schema options]
 
-           billing-mode
-           (assoc :BillingMode billing-mode)
-
-           provisioned-throughput
-           (as-> params'
-               (let [[read-units write-units]
-                     provisioned-throughput]
-                 (assoc params'
-                        :ProvisionedThroughput
-                        {:ReadCapacityUnits read-units
-                         :WriteCapacityUnits write-units})))
-
-           table-class
-           (assoc :TableClass table-class)
-
-           tags
-           (assoc :Tags (for [[tag-key tag-val] tags]
-                          {:Key tag-key
-                           :Value tag-val}))
-
-           SSESpecification
-           (assoc :SSESpecification SSESpecification)
-
-           GlobalSecondaryIndexes
-           (assoc :GlobalSecondaryIndexes GlobalSecondaryIndexes)
-
-           LocalSecondaryIndexes
-           (assoc :LocalSecondaryIndexes LocalSecondaryIndexes)
-
-           StreamSpecification
-           (assoc :StreamSpecification StreamSpecification))]
-
-     (client/make-request client "CreateTable" params))))
+   (-> options
+       (assoc :table table
+              :attr-defs attr-defs
+              :key-schema key-schema)
+       (pre-process)
+       (->> (client/make-request client "CreateTable"))
+       (post-process))))
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateBackup.html
