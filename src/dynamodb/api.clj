@@ -103,6 +103,7 @@
                 limit
                 remove
                 request-items
+                resource-arn
                 return-consumed-capacity
                 return-item-collection-metrics
                 return-values
@@ -148,6 +149,9 @@
 
       backup-arn
       (assoc :BackupArn backup-arn)
+
+      resource-arn
+      (assoc :ResourceArn resource-arn)
 
       request-items
       (assoc :RequestItems
@@ -605,19 +609,15 @@
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_TagResource.html
-(defn tag-resource []
+(defn tag-resource
 
+  ([client resource-arn tags]
+   (tag-resource client resource-arn tags nil))
 
-  #_
-  {
-   "ResourceArn" "string",
-   "Tags" [
-            {
-             "Key" "string",
-             "Value" "string"
-             }
-            ]
-   }
+  ([client resource-arn tags options]
 
-  #_
-  TagResource)
+   (-> options
+       (assoc :tags tags :resource-arn resource-arn)
+       (pre-process)
+       (->> (client/make-request client "TagResource"))
+       (post-process))))

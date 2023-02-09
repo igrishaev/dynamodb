@@ -103,6 +103,14 @@
   ::ne-string)
 
 
+(s/def ::resource-arn
+  ::ne-string)
+
+
+(s/def ::tags
+  (s/map-of ::kw-or-string ::kw-or-string))
+
+
 (s/def ::select
   #{const/select-all-attributes
     const/select-all-projected-attributes
@@ -262,6 +270,17 @@
   :args
   (s/cat :client ::client
          :backup-arn ::backup-arn
+         :options
+         (s/?
+          (s/nilable
+           (s/map-of keyword? any?)))))
+
+
+(s/fdef api/tag-resource
+  :args
+  (s/cat :client ::client
+         :resource-arn ::resource-arn
+         :tags ::tags
          :options
          (s/?
           (s/nilable

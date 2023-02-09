@@ -18,7 +18,8 @@
                        `api/update-item
                        `api/query
                        `api/create-backup
-                       `api/describe-backup])
+                       `api/describe-backup
+                       `api/tag-resource])
 
 
 (def PORT 8000)
@@ -886,4 +887,9 @@
     (is (thrown-with-msg?
             clojure.lang.ExceptionInfo
             #"DynamoDB failure"
-            (api/create-backup client table "aaa")))))
+          (api/create-backup client table "aaa")))))
+
+
+(deftest test-tag-resource
+
+  )
