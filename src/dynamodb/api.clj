@@ -85,6 +85,12 @@
   (transform/encode-attr-names attr-keys))
 
 
+(defn- -remap-key-schema [key-schema]
+  (for [[attr-name key-type] key-schema]
+    {:AttributeName attr-name
+     :KeyType key-type}))
+
+
 (defn pre-process [params]
 
   (let [{:keys [
@@ -97,6 +103,7 @@
                 backup-arn
                 billing-mode
                 consistent-read?
+                global-indexes
                 delete
                 index
                 item
@@ -147,6 +154,15 @@
       backup
       (assoc :BackupName backup)
 
+      global-indexes
+      (assoc :GlobalSecondaryIndexes
+             (for [[idx {:keys [key-schema]}]
+                   global-indexes]
+               [{:IndexName idx
+                 :KeySchema (-remap-key-schema key-schema)
+                 :Projection 123
+                 :ProvisionedThroughput [1 2]}]))
+
       table-class
       (assoc :TableClass table-class)
 
@@ -154,10 +170,7 @@
       (assoc :BillingMode billing-mode)
 
       key-schema
-      (assoc :KeySchema
-             (for [[attr-name key-type] key-schema]
-               {:AttributeName attr-name
-                :KeyType key-type}))
+      (assoc :KeySchema (-remap-key-schema key-schema))
 
       attr-defs
       (assoc :AttributeDefinitions
@@ -195,7 +208,7 @@
       (assoc :RequestItems
              (reduce-kv
               (fn [acc table params]
-                (assoc acc table (pre-process params)))
+                (assoc acc table (pre-process params))) ;; TODO: !!!
               {}
               request-items))
 
@@ -318,6 +331,7 @@
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html
+;; https://cloud.yandex.com/en-ru/docs/ydb/docapi/api-ref/actions/createTable
 (defn create-table
 
   {:arglists
@@ -327,6 +341,7 @@
               ^String table-class
               ^String billing-mode
               ^List   provisioned-throughput
+              ^Map    global-indexes
 
               ;; GlobalSecondaryIndexes
               ;; LocalSecondaryIndexes
