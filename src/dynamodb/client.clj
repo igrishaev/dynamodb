@@ -2,12 +2,11 @@
   (:import
    java.net.URI)
   (:require
-   [dynamodb.mask :as mask]
-   [clojure.java.io :as io]
-   [dynamodb.time :as time]
    [cheshire.core :as json]
    [clj-aws-sign.core :as aws-sign]
-   ;; [clojure.string :as str]
+   [clojure.java.io :as io]
+   [dynamodb.mask :as mask]
+   [dynamodb.time :as time]
    [org.httpkit.client :as http]))
 
 
@@ -62,47 +61,46 @@
          :as :stream}
 
         (http/request
+
          (fn [{:keys [status ^InputStream body]}]
 
-           (let [data-parsed
-                 (with-open [r (io/reader body :encoding "UTF-8")]
-                   (json/parse-stream r keyword))
+           (-> (with-open [r (io/reader body :encoding "UTF-8")]
+                 (json/parse-stream r keyword))
 
-                 {:keys [__type
-                         Message]} data-parsed]
+               (as-> data-parsed
+                   (let [{:keys [__type
+                                 Message]}
+                         data-parsed]
 
-             (if __type
+                     (if __type
 
-               (let [uri
-                     (new URI __type)
+                       (let [uri
+                             (new URI __type)
 
-                     exception
-                     (.getFragment uri)
+                             exception
+                             (.getFragment uri)
 
-                     path
-                     (.getPath uri)]
+                             path
+                             (.getPath uri)]
 
-                 {:error? true
-                  :status status
-                  :path path
-                  :exception exception
-                  :message Message
-                  :payload data
-                  :target target})
+                         {:error? true
+                          :status status
+                          :path path
+                          :exception exception
+                          :message Message
+                          :payload data
+                          :target target})
 
-               data-parsed))))
+                       data-parsed)))
+
+               (as-> response
+                   (if (and (get response :error?) throw?)
+                     (throw (ex-info "DynamoDB failure" response))
+                     response)))))
 
         (as-> response
-            (let [{:as response :keys [error error?]}
+            (let [{:as response :keys [error]}
                   @response]
-
-              (cond
-
-                error
+              (if error
                 (throw error)
-
-                (and error? throw?)
-                (throw (ex-info "DynamoDB failure" response))
-
-                :else
                 response))))))
