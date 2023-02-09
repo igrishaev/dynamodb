@@ -9,7 +9,7 @@
 . DeleteBackup
 + DeleteItem
 + DeleteTable
-. DescribeBackup
++ DescribeBackup
   DescribeContinuousBackups
   DescribeContributorInsights
   DescribeEndpoints
@@ -93,6 +93,7 @@
                 attr-vals
                 attrs-get
                 backup
+                backup-arn
                 consistent-read?
                 delete
                 index
@@ -144,6 +145,9 @@
 
       keys
       (assoc :Keys (mapv encode-attrs keys))
+
+      backup-arn
+      (assoc :BackupArn backup-arn)
 
       request-items
       (assoc :RequestItems
@@ -349,6 +353,21 @@
        (assoc :table table :backup backup)
        (pre-process)
        (->> (client/make-request client "CreateBackup"))
+       (post-process))))
+
+
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_DescribeBackup.html
+(defn describe-backup
+
+  ([client backup-arn]
+   (describe-backup client backup-arn nil))
+
+  ([client backup-arn options]
+
+   (-> options
+       (assoc :backup-arn backup-arn)
+       (pre-process)
+       (->> (client/make-request client "DescribeBackup"))
        (post-process))))
 
 

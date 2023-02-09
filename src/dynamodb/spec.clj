@@ -33,6 +33,10 @@
   ::ne-string)
 
 
+(s/def ::backup-arn
+  ::ne-string)
+
+
 (s/def ::kw-or-string
   (s/or :keyword keyword?
         :string ::ne-string))
@@ -248,6 +252,16 @@
   (s/cat :client ::client
          :table ::table
          :backup ::backup
+         :options
+         (s/?
+          (s/nilable
+           (s/map-of keyword? any?)))))
+
+
+(s/fdef api/describe-backup
+  :args
+  (s/cat :client ::client
+         :backup-arn ::backup-arn
          :options
          (s/?
           (s/nilable

@@ -17,7 +17,8 @@
                        `api/delete-item
                        `api/update-item
                        `api/query
-                       `api/create-backup])
+                       `api/create-backup
+                       `api/describe-backup])
 
 
 (def PORT 8000)
@@ -855,6 +856,19 @@
             {:BackupName "aaa"
              :TableName table}
             :target "CreateBackup"}
+           resp))))
+
+
+(deftest test-describe-backup
+  (let [resp
+        (api/describe-backup CLIENT "foobar")]
+    (is (= {:error? true
+            :status 400
+            :path "com.amazonaws.dynamodb.v20120810"
+            :exception "UnknownOperationException"
+            :message "An unknown operation was requested."
+            :payload {:BackupArn "foobar"}
+            :target "DescribeBackup"}
            resp))))
 
 
