@@ -7,3 +7,4 @@
 - cleanup & drop util
 - write docs
 - release
+- update project.clj
