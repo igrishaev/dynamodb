@@ -610,8 +610,8 @@
 
   #_
   {
-   "ResourceArn": "string",
-   "Tags": [
+   "ResourceArn" "string",
+   "Tags" [
             {
              "Key" "string",
              "Value" "string"
