@@ -1,7 +1,8 @@
 - refactor create-table
+- embed sign code
+- pass http params
 - ? async handler
 - ? with-async?
-- pass http params
 - clj-kondo + clj-frmt
 - cleanup & drop util
 - write docs
