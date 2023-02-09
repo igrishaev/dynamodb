@@ -602,3 +602,22 @@
        (pre-process)
        (->> (client/make-request client "Scan"))
        (post-process))))
+
+
+;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_TagResource.html
+(defn tag-resource []
+
+
+  #_
+  {
+   "ResourceArn": "string",
+   "Tags": [
+            {
+             "Key" "string",
+             "Value" "string"
+             }
+            ]
+   }
+
+  #_
+  TagResource)
