@@ -158,16 +158,23 @@
                            :global-indexes {:idxa {:key-schema {:user/id const/key-type-hash}
                                                    :projection {:non-key-attrs [:aaa :bbb]
                                                                 :type const/projection-type-include}
+                                                   :provisioned-throughput [111 222]}
+                                            :idxb {:key-schema {:user/id const/key-type-hash}
+                                                   :projection {:non-key-attrs [:aaa :bbb]
+                                                                :type const/projection-type-include}
                                                    :provisioned-throughput [111 222]}}
-                           #_:local-indexes
-                           #_:stream-spec
-                           #_:sse-spec
+                           :local-indexes {:idxc {:key-schema {:user/id const/key-type-hash
+                                                               :user/name const/key-type-range}
+                                                  :projection {:non-key-attrs [:ccc :ddd]
+                                                               :type const/projection-type-include}}}
+                           :stream-spec {:enabled? true
+                                         :view-type const/stream-view-type-new-and-old-images}
+                           :sse-spec {:enabled? true
+                                      :kms-key-id "key:abc"
+                                      :type const/sse-type-aes256}})]
 
-                           })]
-
-    (is (= 1
-           response
-))))
+    ;; the result is huge
+    (is (:TableDescription response))))
 
 
 (deftest test-api-negative-response

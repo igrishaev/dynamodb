@@ -223,9 +223,13 @@
   boolean?)
 
 
+(s/def ::view-type
+  ::stream-view-type)
+
+
 (s/def ::stream-spec
   (s/keys :req-un [::enabled?
-                   ::type]))
+                   ::view-type]))
 
 
 (s/def ::kms-key-id

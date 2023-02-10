@@ -136,9 +136,9 @@
 
 
 (defn- -remap-stream-spec
-  [{:keys [enabled? type]}]
+  [{:keys [enabled? view-type]}]
   {:StreamEnabled enabled?
-   :StreamViewType type})
+   :StreamViewType view-type})
 
 
 (defn- -remap-attr-defs [attr-defs]

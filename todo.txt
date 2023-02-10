@@ -1,4 +1,3 @@
-- tests for create-table
 - multimethod?
 - embed sign code
 - drop ring library
