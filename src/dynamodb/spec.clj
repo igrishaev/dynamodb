@@ -72,6 +72,13 @@
     const/billing-mode-pay-per-request})
 
 
+(s/def ::projection-type
+  #{const/projection-type-all
+    const/projection-type-keys-only
+    const/projection-type-include})
+
+
+
 ;;
 ;; Fields
 ;;
@@ -382,7 +389,8 @@
 
 
 (s/fdef api/create-table
-  :args
+  :args any?
+  #_
   (s/cat :client ::client
          :table ::table
          :attr-defs ::attr-defs

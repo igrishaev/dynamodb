@@ -139,6 +139,36 @@
                (assoc-in [:TableDescription :CreationDateTime] ::DUMMY))))))
 
 
+(deftest test-create-table-full-arams
+
+  (let [table
+        (make-table-name)
+
+        response
+        (api/create-table CLIENT
+                          table
+                          {:user/id :N
+                           :user/name :S}
+                          {:user/id const/key-type-hash
+                           :user/name const/key-type-range}
+                          {:tags {:foo "hello"}
+                           :table-class const/table-class-standard
+                           :billing-mode const/billing-mode-pay-per-request
+                           :provisioned-throughput [111 222]
+                           :global-indexes {:idxa {:key-schema {:user/id const/key-type-hash}
+                                                   :projection {:non-key-attrs [:aaa :bbb]
+                                                                :type const/projection-type-include}}}
+                           #_:local-indexes
+                           #_:stream-spec
+                           #_:sse-spec
+
+                           })]
+
+    (is (= 1
+           response
+))))
+
+
 (deftest test-api-negative-response
 
   (let [table

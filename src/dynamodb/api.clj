@@ -111,13 +111,13 @@
                      projection
                      provisioned-throughput]}]
         global-indexes]
-    [(cond-> {:IndexName idx
-              :KeySchema (-remap-key-schema key-schema)
-              :Projection (-remap-projection projection)}
-       provisioned-throughput
-       (assoc :ProvisionedThroughput
-              (-remap-provisioned-throughput
-               provisioned-throughput)))]))
+    (cond-> {:IndexName idx
+             :KeySchema (-remap-key-schema key-schema)
+             :Projection (-remap-projection projection)}
+      provisioned-throughput
+      (assoc :ProvisionedThroughput
+             (-remap-provisioned-throughput
+              provisioned-throughput)))))
 
 
 (defn- -remap-tags [tags]

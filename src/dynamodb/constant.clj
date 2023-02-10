@@ -81,3 +81,12 @@
 
 (def sse-type-kms
   "KMS")
+
+(def projection-type-all
+  "ALL")
+
+(def projection-type-keys-only
+  "KEYS_ONLY")
+
+(def projection-type-include
+  "INCLUDE")
