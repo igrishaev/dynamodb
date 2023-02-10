@@ -135,205 +135,288 @@
     :delete delete}))
 
 
-(defn- -remap-stream-spec
-  [{:keys [enabled? view-type]}]
-  {:StreamEnabled enabled?
-   :StreamViewType view-type})
+(defmulti set-param
+  (fn [params param value]
+    param))
 
 
-(defn- -remap-attr-defs [attr-defs]
-  (for [[attr-name attr-type] attr-defs]
-    {:AttributeName attr-name
-     :AttributeType attr-type}))
+(defmacro defparam
+  {:style/indent 1}
+  [dispatch-val [params value] & body]
+  `(defmethod set-param ~dispatch-val
+     [~params _# ~value]
+     ~@body))
 
 
-(defn -remap-sse-spec
-  [{:keys [enabled? kms-key-id type]}]
+(defparam :attr-defs
+  [params attr-defs]
+  (assoc params :AttributeDefinitions
+         (for [[attr-name attr-type] attr-defs]
+           {:AttributeName attr-name
+            :AttributeType attr-type})))
 
-  (cond-> {}
 
-    (some? enabled?)
-    (assoc :Enabled enabled?)
+(defparam :attr-keys
+  [params attr-keys]
+  (assoc params :ExpressionAttributeNames
+         (-enc-attr-keys attr-keys)))
 
-    kms-key-id
-    (assoc :KMSMasterKeyId kms-key-id)
 
-    type
-    (assoc :SSEType type)))
+(defparam :attr-vals
+  [params attr-vals]
+  (assoc params :ExpressionAttributeValues
+         (-enc-attr-vals attr-vals)))
+
+
+(defparam :attrs-get
+  [params attrs-get]
+  (assoc params :ProjectionExpression
+         (-enc-attr-to-get attrs-get)))
+
+
+(defparam :backup
+  [params backup]
+  (assoc params :BackupName backup))
+
+
+(defparam :backup-arn
+  [params backup-arn]
+  (assoc params :BackupArn backup-arn))
+
+
+(defparam :billing-mode
+  [params billing-mode]
+  (assoc params :BillingMode billing-mode))
+
+
+(defparam :consistent-read?
+  [params consistent-read?]
+  (assoc params :ConsistentRead consistent-read?))
+
+
+(defparam :global-indexes
+  [params global-indexes]
+  (assoc params :GlobalSecondaryIndexes
+         (-remap-indexes global-indexes)))
+
+
+(defparam :index
+  [params index]
+  (assoc params :IndexName index))
+
+
+(defparam :item
+  [params item]
+  (assoc params :Item (encode-attrs item)))
+
+
+(defparam :key
+  [params key]
+  (assoc params :Key (encode-attrs key)))
+
+
+(defparam :key-schema
+  [params key-schema]
+  (assoc params :KeySchema
+         (-remap-key-schema key-schema)))
+
+
+(defparam :keys
+  [params keys]
+  (assoc params :Keys
+         (mapv encode-attrs keys)))
+
+
+(defparam :limit
+  [params limit]
+  (assoc params :Limit limit))
+
+
+(defparam :local-indexes
+  [params local-indexes]
+  (assoc params :LocalSecondaryIndexes
+         (-remap-indexes local-indexes)))
+
+
+(defparam :provisioned-throughput
+  [params provisioned-throughput]
+  (assoc params :ProvisionedThroughput
+         (-remap-provisioned-throughput
+          provisioned-throughput)))
+
+
+(defparam :request-items
+  [params request-items]
+  (assoc params :RequestItems
+         (reduce-kv
+          (fn [acc table params-nested]
+            (assoc acc table
+                   (reduce-kv
+                    (fn [acc k v]
+                      (set-param acc k v))
+                    {}
+                    params-nested)))
+          {}
+          request-items)))
+
+
+(defparam :resource-arn
+  [params resource-arn]
+  (assoc params :ResourceArn resource-arn))
+
+
+(defparam :return-consumed-capacity
+  [params return-consumed-capacity]
+  (assoc params :ReturnConsumedCapacity
+         return-consumed-capacity))
+
+
+(defparam :return-item-collection-metrics
+  [params return-item-collection-metrics]
+  (assoc params :ReturnItemCollectionMetrics
+         return-item-collection-metrics))
+
+
+(defparam :return-values
+  [params return-values]
+  (assoc params :ReturnValues return-values))
+
+
+(defparam :scan-forward?
+  [params scan-forward?]
+  (assoc params :ScanIndexForward scan-forward?))
+
+
+(defparam :segment
+  [params segment]
+  (assoc params :Segment segment))
+
+
+(defparam :select
+  [params select]
+  (assoc params :Select select))
+
+
+(defparam :sql-condition
+  [params sql-condition]
+  (assoc params :ConditionExpression sql-condition))
+
+
+(defparam :sql-filter
+  [params sql-filter]
+  (assoc params :FilterExpression sql-filter))
+
+
+(defparam :sql-key
+  [params sql-key]
+  (assoc params :KeyConditionExpression sql-key))
+
+
+(defparam :sse-spec
+  [params {:keys [enabled? kms-key-id type]}]
+  (assoc params :SSESpecification
+         (cond-> {}
+
+           (some? enabled?)
+           (assoc :Enabled enabled?)
+
+           kms-key-id
+           (assoc :KMSMasterKeyId kms-key-id)
+
+           type
+           (assoc :SSEType type))))
+
+
+(defparam :start-key
+  [params start-key]
+  (assoc params :ExclusiveStartKey
+         (encode-attrs start-key)))
+
+
+(defparam :start-table
+  [params start-table]
+  (assoc params :ExclusiveStartTableName start-table))
+
+
+(defparam :stream-spec
+  [params {:keys [enabled? view-type]}]
+  (assoc params :StreamSpecification
+         {:StreamEnabled enabled?
+          :StreamViewType view-type}))
+
+
+(defparam :table
+  [params table]
+  (assoc params :TableName table))
+
+
+(defparam :table-class
+  [params table-class]
+  (assoc params :TableClass table-class))
+
+
+(defparam :tags
+  [params tags]
+  (assoc params :Tags (-remap-tags tags)))
+
+
+(defparam :total-segments
+  [params total-segments]
+  (assoc params :TotalSegments total-segments))
+
+
+
+
+
+
+
+
+;; add
+;; delete
+;; remove
+;; set
+;;
+;; stream-spec
+;;
+;;
+;;
+
+
+;;
 
 
 (defn pre-process [params]
 
+  (reduce-kv
+   (fn [acc k v]
+     (set-param acc k v))
+   {}
+   params)
+
+  #_
   (let [{:keys [
                 add
-                attr-defs
-                attr-keys
-                attr-vals
-                attrs-get
-                backup
-                backup-arn
-                billing-mode
-                consistent-read?
-                delete
-                global-indexes
-                index
-                item
-                key
-                key-schema
-                keys
-                limit
-                local-indexes
-                provisioned-throughput
-                remove
-                request-items
-                resource-arn
-                return-consumed-capacity
-                return-item-collection-metrics
-                return-values
-                scan-forward?
-                segment
-                select
-                set
-                sql-condition
-                sql-filter
-                sql-key
-                sse-spec
-                start-key
-                start-table
-                stream-spec
-                table
-                table-class
-                tags
-                total-segments
+
+
+
                 ]}
         params]
 
     (cond-> {}
 
-      (some? consistent-read?)
-      (assoc :ConsistentRead consistent-read?)
-
-      sql-filter
-      (assoc :FilterExpression sql-filter)
-
-      sql-key
-      (assoc :KeyConditionExpression sql-key)
-
-      start-key
-      (assoc :ExclusiveStartKey (encode-attrs start-key))
-
-      segment
-      (assoc :Segment segment)
-
-      backup
-      (assoc :BackupName backup)
-
       stream-spec
       (assoc :StreamSpecification
              (-remap-stream-spec stream-spec))
-
-      global-indexes
-      (assoc :GlobalSecondaryIndexes
-             (-remap-indexes global-indexes))
-
-      local-indexes
-      (assoc :LocalSecondaryIndexes
-             (-remap-indexes local-indexes))
-
-      sse-spec
-      (assoc :SSESpecification
-             (-remap-sse-spec sse-spec))
-
-
-      table-class
-      (assoc :TableClass table-class)
-
-      billing-mode
-      (assoc :BillingMode billing-mode)
-
-      key-schema
-      (assoc :KeySchema (-remap-key-schema key-schema))
-
-      attr-defs
-      (assoc :AttributeDefinitions
-             (-remap-attr-defs attr-defs))
-
-      provisioned-throughput
-      (assoc :ProvisionedThroughput
-             (-remap-provisioned-throughput
-              provisioned-throughput))
-
-      total-segments
-      (assoc :TotalSegments total-segments)
-
-      keys
-      (assoc :Keys (mapv encode-attrs keys))
-
-      tags
-      (assoc :Tags (-remap-tags tags))
-
-      backup-arn
-      (assoc :BackupArn backup-arn)
-
-      resource-arn
-      (assoc :ResourceArn resource-arn)
-
-      request-items
-      (assoc :RequestItems
-             (reduce-kv
-              (fn [acc table params]
-                (assoc acc table (pre-process params)))
-              {}
-              request-items))
-
-      (some? scan-forward?)
-      (assoc :ScanIndexForward scan-forward?)
-
-      select
-      (assoc :Select select)
-
-      index
-      (assoc :IndexName index)
 
       (or set add remove delete)
       (assoc :UpdateExpression
              (-remap-update-expression add set remove delete))
 
-      start-table
-      (assoc :ExclusiveStartTableName start-table)
 
-      limit
-      (assoc :Limit limit)
 
-      sql-condition
-      (assoc :ConditionExpression sql-condition)
 
-      table
-      (assoc :TableName table)
 
-      attrs-get
-      (assoc :ProjectionExpression (-enc-attr-to-get attrs-get))
-
-      item
-      (assoc :Item (encode-attrs item))
-
-      key
-      (assoc :Key (encode-attrs key))
-
-      attr-keys
-      (assoc :ExpressionAttributeNames (-enc-attr-keys attr-keys))
-
-      attr-vals
-      (assoc :ExpressionAttributeValues (-enc-attr-vals attr-vals))
-
-      return-consumed-capacity
-      (assoc :ReturnConsumedCapacity return-consumed-capacity)
-
-      return-item-collection-metrics
-      (assoc :ReturnItemCollectionMetrics return-item-collection-metrics)
-
-      return-values
-      (assoc :ReturnValues return-values))))
+      )))
 
 
 (defn- -decode-items [items]

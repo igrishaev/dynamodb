@@ -1,4 +1,5 @@
-- multimethod?
+- add/set/etc
+- move params into a separate ns
 - embed sign code
 - drop ring library
 - pass http params

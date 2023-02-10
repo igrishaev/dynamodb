@@ -139,7 +139,7 @@
                (assoc-in [:TableDescription :CreationDateTime] ::DUMMY))))))
 
 
-(deftest test-create-table-full-arams
+(deftest test-create-table-full-params
 
   (let [table
         (make-table-name)
@@ -398,9 +398,9 @@
                        :user/name "Ivan"
                        :user/foo 3}
                       {:sql-condition "#foo in (:ten, :eleven)"
-                       :attr-names {:foo :user/foo}
-                       :attr-values {:ten 10
-                                     :eleven 11}})
+                       :attr-keys {:foo :user/foo}
+                       :attr-vals {:ten 10
+                                   :eleven 11}})
 
         resp3
         (api/put-item CLIENT
