@@ -91,6 +91,54 @@
      :KeyType key-type}))
 
 
+(defn- -remap-provisioned-throughput
+  [provisioned-throughput]
+  (let [[read-units write-units]
+        provisioned-throughput]
+    {:ReadCapacityUnits read-units
+     :WriteCapacityUnits write-units}))
+
+
+(defn- -remap-projection
+  [{:keys [type non-key-attrs]}]
+  {:NonKeyAttributes non-key-attrs
+   :ProjectionType type})
+
+
+(defn- -remap-global-indexes
+  [global-indexes]
+  (for [[idx {:keys [key-schema
+                     projection
+                     provisioned-throughput]}]
+        global-indexes]
+    [{:IndexName idx
+      :KeySchema (-remap-key-schema key-schema)
+      :Projection (-remap-projection projection)
+      :ProvisionedThroughput (-remap-provisioned-throughput
+                              provisioned-throughput)}]))
+
+
+(defn- -remap-tags [tags]
+  (for [[k v] tags]
+    {:Key k
+     :Value v}))
+
+
+(defn- -remap-update-expression
+  [add set remove delete]
+  (transform/update-expression
+   {:set set
+    :add add
+    :remove remove
+    :delete delete}))
+
+
+(defn- -remap-attr-defs [attr-defs]
+  (for [[attr-name attr-type] attr-defs]
+    {:AttributeName attr-name
+     :AttributeType attr-type}))
+
+
 (defn pre-process [params]
 
   (let [{:keys [
@@ -156,12 +204,7 @@
 
       global-indexes
       (assoc :GlobalSecondaryIndexes
-             (for [[idx {:keys [key-schema]}]
-                   global-indexes]
-               [{:IndexName idx
-                 :KeySchema (-remap-key-schema key-schema)
-                 :Projection 123
-                 :ProvisionedThroughput [1 2]}]))
+             (-remap-global-indexes global-indexes))
 
       table-class
       (assoc :TableClass table-class)
@@ -174,18 +217,12 @@
 
       attr-defs
       (assoc :AttributeDefinitions
-             (for [[attr-name attr-type] attr-defs]
-               {:AttributeName attr-name
-                :AttributeType attr-type}))
+             (-remap-attr-defs attr-defs))
 
       provisioned-throughput
-      (as-> params'
-          (let [[read-units write-units]
-                provisioned-throughput]
-            (assoc params'
-                   :ProvisionedThroughput
-                   {:ReadCapacityUnits read-units
-                    :WriteCapacityUnits write-units})))
+      (assoc :ProvisionedThroughput
+             (-remap-provisioned-throughput
+              provisioned-throughput))
 
       total-segments
       (assoc :TotalSegments total-segments)
@@ -194,9 +231,7 @@
       (assoc :Keys (mapv encode-attrs keys))
 
       tags
-      (assoc :Tags (for [[k v] tags]
-                     {:Key k
-                      :Value v}))
+      (assoc :Tags (-remap-tags tags))
 
       backup-arn
       (assoc :BackupArn backup-arn)
@@ -208,7 +243,7 @@
       (assoc :RequestItems
              (reduce-kv
               (fn [acc table params]
-                (assoc acc table (pre-process params))) ;; TODO: !!!
+                (assoc acc table (pre-process params)))
               {}
               request-items))
 
@@ -222,14 +257,8 @@
       (assoc :IndexName index)
 
       (or set add remove delete)
-      (as-> params'
-          (let [update-expression
-                (transform/update-expression
-                 {:set set
-                  :add add
-                  :remove remove
-                  :delete delete})]
-            (assoc params' :UpdateExpression update-expression)))
+      (assoc :UpdateExpression
+             (-remap-update-expression add set remove delete))
 
       start-table
       (assoc :ExclusiveStartTableName start-table)
