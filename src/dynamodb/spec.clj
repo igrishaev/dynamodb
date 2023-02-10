@@ -1,20 +1,89 @@
 (ns dynamodb.spec
   (:require
-   [dynamodb.api :as api]
-   [dynamodb.mask :as mask]
-   [dynamodb.constant :as const]
+   [clojure.spec.alpha :as s]
+   [clojure.spec.test.alpha :as spec.test]
    [clojure.string :as str]
-   [clojure.spec.alpha :as s]))
+   [dynamodb.api :as api]
+   [dynamodb.constant :as const]
+   [dynamodb.mask :as mask]))
 
 
 (s/def ::ne-string
   (s/and string? (complement str/blank?)))
 
 
+;;
+;; Enum
+;;
+
+(s/def ::attr-type
+  #{"S" "N" "B" :S :N :B})
+
+
+(s/def ::key-type
+  #{const/key-type-hash
+    const/key-type-range})
+
+
+(s/def ::sse-type
+  #{const/sse-type-aes256
+    const/sse-type-kms})
+
+
+(s/def ::stream-view-type
+  #{const/stream-view-type-new-image
+    const/stream-view-type-old-image
+    const/stream-view-type-new-and-old-images
+    const/stream-view-type-keys-only})
+
+(s/def ::select
+  #{const/select-all-attributes
+    const/select-all-projected-attributes
+    const/select-specific-attributes
+    const/select-count})
+
+
+(s/def ::return-values
+  #{const/return-values-none
+    const/return-values-all-old
+    const/return-values-updated-old
+    const/return-values-all-new
+    const/return-values-updated-new})
+
+
+(s/def ::return-consumed-capacity
+  #{const/return-consumed-capacity-indexes
+    const/return-consumed-capacity-total
+    const/return-consumed-capacity-none})
+
+
+(s/def ::return-item-collection-metrics
+  #{const/return-item-collection-metrics-size
+    const/return-item-collection-metrics-none})
+
+
+(s/def ::table-class
+  #{const/table-class-standard
+    const/table-class-standard-infrequent_access})
+
+
+(s/def ::billing-mode
+  #{const/billing-mode-provisioned
+    const/billing-mode-pay-per-request})
+
+
+;;
+;; Fields
+;;
+
 (s/def ::access-key mask/masked?)
 (s/def ::secret-key mask/masked?)
 (s/def ::endpoint   ::ne-string)
 (s/def ::region     ::ne-string)
+
+
+(s/def ::attr-defs
+  (s/map-of ::kw-or-string ::attr-type))
 
 
 (s/def ::client
@@ -107,42 +176,59 @@
   ::ne-string)
 
 
-(s/def ::attr-defs
-  map? ;; todo
-  )
-
 (s/def ::key-schema
-  map?) ;; todo
+  (s/map-of ::kw-or-string ::key-type))
 
 
 (s/def ::tags
   (s/map-of ::kw-or-string ::kw-or-string))
 
 
-(s/def ::select
-  #{const/select-all-attributes
-    const/select-all-projected-attributes
-    const/select-specific-attributes
-    const/select-count})
+(s/def ::provisioned-throughput
+  (s/tuple number? number?))
 
 
-(s/def ::return-values
-  #{const/return-values-none
-    const/return-values-all-old
-    const/return-values-updated-old
-    const/return-values-all-new
-    const/return-values-updated-new})
+(s/def ::non-key-attrs
+  (s/coll-of ::kw-or-string))
 
 
-(s/def ::return-consumed-capacity
-  #{const/return-consumed-capacity-indexes
-    const/return-consumed-capacity-total
-    const/return-consumed-capacity-none})
+(s/def ::projection
+  (s/keys :req-un [::non-key-attrs
+                   ::type]))
 
 
-(s/def ::return-item-collection-metrics
-  #{const/return-item-collection-metrics-size
-    const/return-item-collection-metrics-none})
+(s/def ::indexes
+  (s/map-of ::kw-or-string
+            (s/keys :req-un [::key-schema
+                             ::projection]
+                    :opt-un [::provisioned-throughput])))
+
+
+(s/def ::global-indexes
+  ::indexes)
+
+
+(s/def ::local-indexes
+  ::indexes)
+
+
+(s/def ::enabled?
+  boolean?)
+
+
+(s/def ::stream-spec
+  (s/keys :req-un [::enabled?
+                   ::type]))
+
+
+(s/def ::kms-key-id
+  ::ne-string)
+
+
+(s/def ::sse-spec
+  (s/keys :opt-un [::enabled?
+                   ::kms-key-id
+                   ::type]))
 
 
 ;;
@@ -305,6 +391,11 @@
          (s/?
           (s/nilable
            (s/keys
-            :opt-un [::tags])))))
-
-;; todo: set specs
+            :opt-un [::tags
+                     ::table-class
+                     ::billing-mode
+                     ::provisioned-throughput
+                     ::global-indexes
+                     ::local-indexes
+                     ::stream-spec
+                     ::sse-spec])))))

@@ -105,17 +105,19 @@
    :ProjectionType type})
 
 
-(defn- -remap-global-indexes
+(defn- -remap-indexes
   [global-indexes]
   (for [[idx {:keys [key-schema
                      projection
                      provisioned-throughput]}]
         global-indexes]
-    [{:IndexName idx
-      :KeySchema (-remap-key-schema key-schema)
-      :Projection (-remap-projection projection)
-      :ProvisionedThroughput (-remap-provisioned-throughput
-                              provisioned-throughput)}]))
+    [(cond-> {:IndexName idx
+              :KeySchema (-remap-key-schema key-schema)
+              :Projection (-remap-projection projection)}
+       provisioned-throughput
+       (assoc :ProvisionedThroughput
+              (-remap-provisioned-throughput
+               provisioned-throughput)))]))
 
 
 (defn- -remap-tags [tags]
@@ -133,10 +135,31 @@
     :delete delete}))
 
 
+(defn- -remap-stream-spec
+  [{:keys [enabled? type]}]
+  {:StreamEnabled enabled?
+   :StreamViewType type})
+
+
 (defn- -remap-attr-defs [attr-defs]
   (for [[attr-name attr-type] attr-defs]
     {:AttributeName attr-name
      :AttributeType attr-type}))
+
+
+(defn -remap-sse-spec
+  [{:keys [enabled? kms-key-id type]}]
+
+  (cond-> {}
+
+    (some? enabled?)
+    (assoc :Enabled enabled?)
+
+    kms-key-id
+    (assoc :KMSMasterKeyId kms-key-id)
+
+    type
+    (assoc :SSEType type)))
 
 
 (defn pre-process [params]
@@ -151,14 +174,15 @@
                 backup-arn
                 billing-mode
                 consistent-read?
-                global-indexes
                 delete
+                global-indexes
                 index
                 item
                 key
                 key-schema
                 keys
                 limit
+                local-indexes
                 provisioned-throughput
                 remove
                 request-items
@@ -173,8 +197,10 @@
                 sql-condition
                 sql-filter
                 sql-key
+                sse-spec
                 start-key
                 start-table
+                stream-spec
                 table
                 table-class
                 tags
@@ -202,9 +228,22 @@
       backup
       (assoc :BackupName backup)
 
+      stream-spec
+      (assoc :StreamSpecification
+             (-remap-stream-spec stream-spec))
+
       global-indexes
       (assoc :GlobalSecondaryIndexes
-             (-remap-global-indexes global-indexes))
+             (-remap-indexes global-indexes))
+
+      local-indexes
+      (assoc :LocalSecondaryIndexes
+             (-remap-indexes local-indexes))
+
+      sse-spec
+      (assoc :SSESpecification
+             (-remap-sse-spec sse-spec))
+
 
       table-class
       (assoc :TableClass table-class)
@@ -371,13 +410,9 @@
               ^String billing-mode
               ^List   provisioned-throughput
               ^Map    global-indexes
-
-              ;; GlobalSecondaryIndexes
-              ;; LocalSecondaryIndexes
-              ;; SSESpecification
-              ;; StreamSpecification
-
-              ]}])}
+              ^Map    local-indexes
+              ^Map    stream-spec
+              ^Map    sse-spec]}])}
 
   ([client table attr-defs key-schema]
    (create-table client table attr-defs key-schema nil))

@@ -2,26 +2,15 @@
   (:import
    java.util.UUID)
   (:require
-   dynamodb.spec
-   [dynamodb.mask :as mask]
-   [dynamodb.constant :as const]
-   [dynamodb.api :as api]
    [clojure.spec.test.alpha :as spec.test]
-   [clojure.test :refer [is deftest]]))
+   [clojure.test :refer [is deftest]]
+   [dynamodb.api :as api]
+   [dynamodb.constant :as const]
+   [dynamodb.mask :as mask]
+   dynamodb.spec))
 
 
-(spec.test/instrument
- [`api/create-backup
-  `api/create-table
-  `api/delete-item
-  `api/delete-table
-  `api/describe-backup
-  `api/describe-table
-  `api/get-item
-  `api/put-item
-  `api/query
-  `api/tag-resource
-  `api/update-item])
+(spec.test/instrument)
 
 
 (def PORT 8000)

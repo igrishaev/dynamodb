@@ -63,3 +63,21 @@
 
 (def select-count
   "COUNT")
+
+(def stream-view-type-new-image
+  "NEW_IMAGE")
+
+(def stream-view-type-old-image
+  "OLD_IMAGE")
+
+(def stream-view-type-new-and-old-images
+  "NEW_AND_OLD_IMAGES")
+
+(def stream-view-type-keys-only
+  "KEYS_ONLY")
+
+(def sse-type-aes256
+  "AES256")
+
+(def sse-type-kms
+  "KMS")
