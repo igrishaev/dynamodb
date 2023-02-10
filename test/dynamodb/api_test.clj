@@ -157,7 +157,8 @@
                            :provisioned-throughput [111 222]
                            :global-indexes {:idxa {:key-schema {:user/id const/key-type-hash}
                                                    :projection {:non-key-attrs [:aaa :bbb]
-                                                                :type const/projection-type-include}}}
+                                                                :type const/projection-type-include}
+                                                   :provisioned-throughput [111 222]}}
                            #_:local-indexes
                            #_:stream-spec
                            #_:sse-spec

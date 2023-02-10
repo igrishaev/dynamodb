@@ -389,8 +389,7 @@
 
 
 (s/fdef api/create-table
-  :args any?
-  #_
+  :args
   (s/cat :client ::client
          :table ::table
          :attr-defs ::attr-defs
