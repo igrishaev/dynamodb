@@ -1,5 +1,7 @@
-- refactor create-table
+- tests for create-table
+- multimethod?
 - embed sign code
+- drop ring library
 - pass http params
 - ? async handler
 - ? with-async?
