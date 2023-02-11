@@ -365,10 +365,9 @@
   (assoc params :TotalSegments total-segments))
 
 
-(defparam :add
-  [params add]
-  (if-let [expr
-           (transform/add-expr add)]
+(defn- -update-expression
+  [params expr]
+  (if expr
     (update params :UpdateExpression
             str
             \space
@@ -376,15 +375,24 @@
     params))
 
 
-;; delete
-;; remove
-;; set
-;;
-;;
-;;
+(defparam :add
+  [params add]
+  (-update-expression params (transform/add-expr add)))
 
 
-;;
+(defparam :delete
+  [params delete]
+  (-update-expression params (transform/delete-expr delete)))
+
+
+(defparam :set
+  [params set]
+  (-update-expression params (transform/set-expr set)))
+
+
+(defparam :remove
+  [params remove]
+  (-update-expression params (transform/remove-expr remove)))
 
 
 (defn pre-process [params]

@@ -41,6 +41,7 @@
                     {:key k}))))
 
 
+;; TODO: drop
 (defn build-expr [tag form]
   (when form
     (case tag
@@ -75,6 +76,30 @@
                           (format "%s %s" k v))))))
 
 
+(defn set-expr [form]
+  (when form
+    (str "SET "
+         (str/join ", " (for [[k v] form]
+                          (format "%s = %s" k v))))))
+
+
+(defn delete-expr [form]
+  (when form
+    (str "DELETE "
+         (str/join ", "
+                   (for [[k v] form]
+                     (format "%s %s" (keyword->name-placeholder k) v))))))
+
+
+(defn remove-expr [form]
+  (when form
+    (str "REMOVE "
+         (->> form
+              (map keyword->name-placeholder)
+              (str/join ", ")))))
+
+
+;; TODO: drop
 (defn update-expression
   [tag->form]
   (when-let [exprs
