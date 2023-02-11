@@ -68,6 +68,13 @@
                        (format "%s %s" (keyword->name-placeholder k) v)))))))
 
 
+(defn add-expr [form]
+  (when form
+    (str "ADD "
+         (str/join ", " (for [[k v] form]
+                          (format "%s %s" k v))))))
+
+
 (defn update-expression
   [tag->form]
   (when-let [exprs

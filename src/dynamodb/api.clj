@@ -365,18 +365,20 @@
   (assoc params :TotalSegments total-segments))
 
 
+(defparam :add
+  [params add]
+  (if-let [expr
+           (transform/add-expr add)]
+    (update params :UpdateExpression
+            str
+            \space
+            expr)
+    params))
 
 
-
-
-
-
-;; add
 ;; delete
 ;; remove
 ;; set
-;;
-;; stream-spec
 ;;
 ;;
 ;;
@@ -403,10 +405,6 @@
         params]
 
     (cond-> {}
-
-      stream-spec
-      (assoc :StreamSpecification
-             (-remap-stream-spec stream-spec))
 
       (or set add remove delete)
       (assoc :UpdateExpression
