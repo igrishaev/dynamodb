@@ -1,6 +1,26 @@
 (ns dynamodb.transform
+  (:refer-clojure :exclude [update-vals
+                            update-keys])
   (:require
    [clojure.string :as str]))
+
+
+(defn update-vals [m f]
+  (persistent!
+   (reduce-kv
+    (fn [acc! k v]
+      (assoc! acc! k (f v)))
+    (transient {})
+    m)))
+
+
+(defn update-keys [m f]
+  (persistent!
+   (reduce-kv
+    (fn [acc! k v]
+      (assoc! acc! (f k) v))
+    (transient {})
+    m)))
 
 
 (defn key->attr-placeholder
@@ -41,34 +61,6 @@
                     {:key k}))))
 
 
-;; TODO: drop
-(defn build-expr [tag form]
-  (when form
-    (case tag
-
-      :set
-      (str "SET "
-           (str/join ", " (for [[k v] form]
-                            (format "%s = %s" k v))))
-
-      :remove
-      (str "REMOVE "
-           (->> form
-                (map keyword->name-placeholder)
-                (str/join ", ")))
-
-      :add
-      (str "ADD "
-           (str/join ", " (for [[k v] form]
-                            (format "%s %s" k v))))
-
-      :delete
-      (str "DELETE "
-           (str/join ", "
-                     (for [[k v] form]
-                       (format "%s %s" (keyword->name-placeholder k) v)))))))
-
-
 (defn add-expr [form]
   (when form
     (str "ADD "
@@ -99,7 +91,22 @@
               (str/join ", ")))))
 
 
-;; TODO: drop
+(defn build-expr [tag form]
+  (case tag
+
+    :set
+    (set-expr form)
+
+    :remove
+    (remove-expr form)
+
+    :add
+    (add-expr form)
+
+    :delete
+    (delete-expr form)))
+
+
 (defn update-expression
   [tag->form]
   (when-let [exprs
