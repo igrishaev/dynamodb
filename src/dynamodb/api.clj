@@ -158,8 +158,8 @@
    '([client table item]
      [client table item
       {:keys [^String sql-condition
-              ^Map    attr-keys
-              ^Map    attr-vals
+              ^Map    attr-names
+              ^Map    attr-values
               ^String return-consumed-capacity
               ^String return-item-collection-metrics
               ^String return-values]}])}
@@ -182,7 +182,7 @@
   {:arglists
    '([client table key]
      [client table key {:keys [^List    attrs-get
-                               ^Map     attr-keys
+                               ^Map     attr-names
                                ^Boolean consistent-read?
                                ^String  return-consumed-capacity]}])}
 
@@ -225,8 +225,8 @@
    '([client table key]
      [client table key
       {:keys [^String sql-condition
-              ^Map    attr-keys
-              ^Map    attr-vals
+              ^Map    attr-names
+              ^Map    attr-values
               ^String return-consumed-capacity
               ^String return-item-collection-metrics
               ^String return-values]}])}
@@ -251,8 +251,8 @@
    '([client table key]
      [client table key
       {:keys [^String sql-condition
-              ^Map    attr-keys
-              ^Map    attr-vals
+              ^Map    attr-names
+              ^Map    attr-values
               ^Map    set
               ^Map    add
               ^List   remove
@@ -290,8 +290,8 @@
               ^Boolean return-consumed-capacity
               ^String  sql-key
               ^List    attrs-get
-              ^Map     attr-keys
-              ^Map     attr-vals]}])}
+              ^Map     attr-names
+              ^Map     attr-values]}])}
 
   ([client table]
    (query client table nil))
@@ -311,8 +311,8 @@
   {:arglists
    '([client table]
      [client table
-      {:keys [^Map     attr-keys
-              ^Map     attr-vals
+      {:keys [^Map     attr-names
+              ^Map     attr-values
               ^List    attrs-get
               ^Boolean consistent-read?
               ^String  sql-filter

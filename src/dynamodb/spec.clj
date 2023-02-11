@@ -89,7 +89,7 @@
 
 
 (s/def ::attr-defs
-  (s/map-of ::kw-or-string ::attr-type))
+  (s/map-of ::attr ::attr-type))
 
 
 (s/def ::client
@@ -112,6 +112,7 @@
   ::ne-string)
 
 
+;; TODO: clarify
 (s/def ::kw-or-string
   (s/or :keyword keyword?
         :string ::ne-string))
@@ -140,11 +141,11 @@
            (str/starts-with? string ":"))))
 
 
-(s/def ::attr-keys
+(s/def ::attr-names
   (s/map-of ::attr-name-alias ::attr))
 
 
-(s/def ::attr-vals
+(s/def ::attr-values
   (s/map-of ::attr-value-alias any?))
 
 
@@ -286,8 +287,8 @@
           (s/nilable
            (s/keys
             :opt-un [::sql-condition
-                     ::attr-keys
-                     ::attr-vals
+                     ::attr-names
+                     ::attr-values
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
                      ::return-values])))))
@@ -303,7 +304,7 @@
           (s/nilable
            (s/keys
             :opt-un [::attrs-get
-                     ::attr-keys
+                     ::attr-names
                      ::consistent-read?
                      ::return-consumed-capacity
                      ::return-item-collection-metrics])))))
@@ -320,8 +321,8 @@
            (s/keys
             :opt-un [::sql-condition
                      ::attrs-get
-                     ::attr-keys
-                     ::attr-vals
+                     ::attr-names
+                     ::attr-values
                      ::return-consumed-capacity
                      ::return-item-collection-metrics
                      ::return-values])))))
@@ -337,8 +338,8 @@
           (s/nilable
            (s/keys
             :opt-un [::sql-condition
-                     ::attr-keys
-                     ::attr-vals
+                     ::attr-names
+                     ::attr-values
                      ::set
                      ::add
                      ::remove
@@ -366,8 +367,8 @@
                      ::return-consumed-capacity
                      ::sql-key
                      ::attrs-get
-                     ::attr-keys
-                     ::attr-vals])))))
+                     ::attr-names
+                     ::attr-values])))))
 
 
 (s/fdef api/create-backup
@@ -432,8 +433,8 @@
           (s/nilable
            (s/keys
             :opt-un [::sql-condition
-                     ::attr-keys
-                     ::attr-vals
+                     ::attr-names
+                     ::attr-values
                      ::set
                      ::add
                      ::remove

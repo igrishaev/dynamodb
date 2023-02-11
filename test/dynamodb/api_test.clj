@@ -350,10 +350,10 @@
                        :user/name "Ivan"
                        :user/test 3}
                       {:sql-condition "#foo in (:one, :two, :three)"
-                       :attr-keys {"#foo" :user/foo}
-                       :attr-vals {":one" 1
-                                   ":two" 2
-                                   ":three" 3}
+                       :attr-names {"#foo" :user/foo}
+                       :attr-values {":one" 1
+                                     ":two" 2
+                                     ":three" 3}
                        :return-values const/return-values-all-old})
 
         resp3
@@ -398,9 +398,9 @@
                        :user/name "Ivan"
                        :user/foo 3}
                       {:sql-condition "#foo in (:ten, :eleven)"
-                       :attr-keys {"#foo" :user/foo}
-                       :attr-vals {":ten" 10
-                                   ":eleven" 11}})
+                       :attr-names {"#foo" :user/foo}
+                       :attr-values {":ten" 10
+                                     ":eleven" 11}})
 
         resp3
         (api/put-item CLIENT
@@ -544,10 +544,10 @@
                          table
                          {:user/id 1 :user/name "Ivan"}
                          {:sql-condition "#kek in (:foo, :bar, :baz)"
-                          :attr-keys {"#kek" :test/kek}
-                          :attr-vals {":foo" 1
-                                      ":bar" 99
-                                      ":baz" 3}})
+                          :attr-names {"#kek" :test/kek}
+                          :attr-values {":foo" 1
+                                        ":bar" 99
+                                        ":baz" 3}})
 
         resp3
         (api/get-item CLIENT
@@ -578,10 +578,10 @@
                          table
                          {:user/id 1 :user/name "Ivan"}
                          {:sql-condition "#kek in (:foo, :bar, :baz)"
-                          :attr-keys {"#kek" :test/kek}
-                          :attr-vals {":foo" 1
-                                      ":bar" 2
-                                      ":baz" 3}})
+                          :attr-names {"#kek" :test/kek}
+                          :attr-values {":foo" 1
+                                        ":bar" 2
+                                        ":baz" 3}})
 
         resp3
         (api/get-item CLIENT
@@ -623,6 +623,7 @@
                        :user/name "Ivan"
                        :test/kek 99
                        :test/lol "poo"
+                       :test/counter 1
                        :abc "test"
                        :amount 3
                        :kek/numbers #{1 3 5}})
@@ -633,14 +634,16 @@
                          {:user/id 1
                           :user/name "Ivan"}
                          {:sql-condition "#id = :one"
-                          :attr-keys {"#id" :user/id
-                                      "#kek" :test/kek
-                                      "#numbers" :kek/numbers
-                                      "#lol" :test/lol}
-                          :attr-vals {":num" 123
-                                      ":one" 1
-                                      ":drop" #{1 5}}
-                          :set {"Foobar" :num}
+                          :attr-names {"#id" :user/id
+                                       "#kek" :test/kek
+                                       "#numbers" :kek/numbers
+                                       "#counter" :test/counter
+                                       "#lol" :test/lol}
+                          :attr-values {":num" 123
+                                        ":one" 1
+                                        ":drop" #{1 5}}
+                          :set {"Foobar" :num
+                                "#counter" "#counter + :one"}
                           :add {"amount" :one}
                           :delete {:numbers :drop}
                           :remove ["#kek" "abc" :lol]})
@@ -657,6 +660,7 @@
     (is (= {:Item
             {:kek/numbers #{3}
              :amount 4
+             :test/counter 2
              :user/name "Ivan"
              :user/id 1
              :Foobar 123}}
@@ -694,8 +698,8 @@
 
         params
         {:sql-key "#id = :one"
-         :attr-keys {"#id" :user/id}
-         :attr-vals {":one" 1}
+         :attr-names {"#id" :user/id}
+         :attr-values {":one" 1}
          :limit 1}
 
         resp1
@@ -770,9 +774,9 @@
         params
         {:sql-filter "#foo = :two"
          :attrs-get [:test/foo "#name"]
-         :attr-keys {"#foo" :test/foo
-                     "#name" :user/name}
-         :attr-vals {":two" 2}
+         :attr-names {"#foo" :test/foo
+                      "#name" :user/name}
+         :attr-values {":two" 2}
          :limit 2}
 
         resp1
@@ -909,9 +913,9 @@
         (assoc CLIENT :throw? true)]
 
     (is (thrown-with-msg?
-         clojure.lang.ExceptionInfo
-         #"DynamoDB failure"
-         (api/create-backup client table "aaa")))))
+            clojure.lang.ExceptionInfo
+            #"DynamoDB failure"
+          (api/create-backup client table "aaa")))))
 
 
 (deftest test-tag-resource

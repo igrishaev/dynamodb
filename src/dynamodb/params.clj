@@ -78,26 +78,26 @@
             :AttributeType attr-type})))
 
 
-(defparam :attr-keys
-  [params attr-keys]
+(defparam :attr-names
+  [params attr-names]
   (reduce-kv
    (fn [acc k v]
      (assoc-in acc
                [:ExpressionAttributeNames k]
                v))
    params
-   attr-keys))
+   attr-names))
 
 
-(defparam :attr-vals
-  [params attr-vals]
+(defparam :attr-values
+  [params attr-values]
   (reduce-kv
    (fn [acc k v]
      (assoc-in acc
                [:ExpressionAttributeValues k]
                (encode v)))
    params
-   attr-vals))
+   attr-values))
 
 
 (defn +join [acc string]

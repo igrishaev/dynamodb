@@ -4,4 +4,5 @@
 - write docs
 - release
 - improve hex/bytes
-- make-client map
+- spec kw-or-string
+- add/set/remove/delete kw/string
