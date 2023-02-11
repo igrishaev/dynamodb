@@ -1,7 +1,6 @@
-- embed sign code
-- drop ring library
 - pass http params
 - ? async handler
 - ? with-async?
 - write docs
 - release
+- improve hex/bytes

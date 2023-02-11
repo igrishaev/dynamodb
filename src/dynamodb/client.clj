@@ -4,7 +4,7 @@
    java.net.URI)
   (:require
    [cheshire.core :as json]
-   [clj-aws-sign.core :as aws-sign]
+   [dynamodb.sign :as sign]
    [clojure.java.io :as io]
    [dynamodb.mask :as mask]
    [dynamodb.time :as time]
@@ -35,7 +35,7 @@
         (format "DynamoDB_%s.%s" version target)
 
         auth-header
-        (aws-sign/authorize
+        (sign/authorize
          {:method "POST"
           :uri path
           :date date

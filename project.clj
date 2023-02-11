@@ -29,8 +29,7 @@
 
   :dependencies
   [[http-kit "2.6.0"]
-   [cheshire "5.10.0"]
-   [clj-aws-sign "0.1.1"]]
+   [cheshire "5.10.0"]]
 
   :cljfmt
   {:remove-consecutive-blank-lines? false
