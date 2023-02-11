@@ -120,21 +120,6 @@
               provisioned-throughput)))))
 
 
-(defn- -remap-tags [tags]
-  (for [[k v] tags]
-    {:Key k
-     :Value v}))
-
-
-(defn- -remap-update-expression
-  [add set remove delete]
-  (transform/update-expression
-   {:set set
-    :add add
-    :remove remove
-    :delete delete}))
-
-
 (defmulti set-param
   (fn [params param value]
     param))
@@ -357,7 +342,10 @@
 
 (defparam :tags
   [params tags]
-  (assoc params :Tags (-remap-tags tags)))
+  (assoc params :Tags
+         (for [[k v] tags]
+           {:Key k
+            :Value v})))
 
 
 (defparam :total-segments
@@ -396,33 +384,11 @@
 
 
 (defn pre-process [params]
-
   (reduce-kv
    (fn [acc k v]
      (set-param acc k v))
    {}
-   params)
-
-  #_
-  (let [{:keys [
-                add
-
-
-
-                ]}
-        params]
-
-    (cond-> {}
-
-      (or set add remove delete)
-      (assoc :UpdateExpression
-             (-remap-update-expression add set remove delete))
-
-
-
-
-
-      )))
+   params))
 
 
 (defn- -decode-items [items]
