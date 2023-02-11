@@ -44,7 +44,7 @@
     {:N this})
 
   nil
-  (-encode [this]
+  (-encode [_this]
     {:NULL true})
 
   clojure.lang.IPersistentVector

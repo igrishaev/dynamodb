@@ -67,14 +67,14 @@
          (encode #{"a" "b" "c"})))
 
   (is (thrown-with-msg?
-          clojure.lang.ExceptionInfo
-          #"(?i)Cannot encode a set"
-        (encode #{nil 1 2})))
+       clojure.lang.ExceptionInfo
+       #"(?i)Cannot encode a set"
+       (encode #{nil 1 2})))
 
   (is (thrown-with-msg?
-          clojure.lang.ExceptionInfo
-          #"(?i)Cannot encode a set"
-        (encode #{true false})))
+       clojure.lang.ExceptionInfo
+       #"(?i)Cannot encode a set"
+       (encode #{true false})))
 
   (let [uuid
         (UUID/randomUUID)]

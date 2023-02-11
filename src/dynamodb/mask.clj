@@ -12,7 +12,7 @@
 
   Object
 
-  (toString [this]
+  (toString [_this]
     "<< masked >>")
 
   IMask
@@ -20,7 +20,7 @@
   (mask [this]
     this)
 
-  (unmask [this]
+  (unmask [_this]
     value))
 
 

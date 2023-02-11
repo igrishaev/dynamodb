@@ -12,12 +12,6 @@
       (util/update-keys str)))
 
 
-(defn- -enc-attr-vals [attr-vals]
-  (-> attr-vals
-      (encode-attrs)
-      (util/update-keys str)))
-
-
 (defn- -enc-attr-to-get [attr-to-get]
   (->> attr-to-get
        (map transform/keyword->name-placeholder)
@@ -74,7 +68,7 @@
 ;;
 
 (defmulti set-param
-  (fn [params param value]
+  (fn [_params param _value]
     param))
 
 

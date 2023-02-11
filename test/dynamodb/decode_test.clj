@@ -1,6 +1,4 @@
 (ns dynamodb.decode-test
-  (:import
-   java.util.UUID)
   (:require
    [dynamodb.decode :refer [decode
                             decode-attrs]]
@@ -20,7 +18,7 @@
          (decode {:BS ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]})))
 
   (is (= ["Cookies" "Coffee" 3.14159]
-         (decode {:L [ {"S" "Cookies"} {"S" "Coffee"} {"N" "3.14159"}]})))
+         (decode {:L [{"S" "Cookies"} {"S" "Coffee"} {"N" "3.14159"}]})))
 
   (is (= {"Name" "Joe" "Age" 35}
          (decode {:M {"Name" {"S" "Joe"}
@@ -45,9 +43,9 @@
          (decode {:SS ["Giraffe", "Hippo" ,"Zebra"]})))
 
   (is (thrown-with-msg?
-          clojure.lang.ExceptionInfo
-          #"(?i)Cannot decode value"
-        (decode {:AA 42}))))
+       clojure.lang.ExceptionInfo
+       #"(?i)Cannot decode value"
+       (decode {:AA 42}))))
 
 
 (deftest test-decode-attrs

@@ -1,7 +1,6 @@
 (ns dynamodb.spec
   (:require
    [clojure.spec.alpha :as s]
-   [clojure.spec.test.alpha :as spec.test]
    [clojure.string :as str]
    [dynamodb.api :as api]
    [dynamodb.constant :as const]

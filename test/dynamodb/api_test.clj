@@ -200,7 +200,7 @@
   (let [table
         (make-table-name)
 
-        resp1
+        _
         (api/create-table CLIENT
                           table
                           {:user/id :N}
@@ -384,14 +384,14 @@
         _
         (make-tmp-table table)
 
-        resp1
+        _
         (api/put-item CLIENT
                       table
                       {:user/id 1
                        :user/name "Ivan"
                        :user/foo 1})
 
-        resp2
+        _
         (api/put-item CLIENT
                       table
                       {:user/id 1
@@ -914,9 +914,9 @@
         (assoc CLIENT :throw? true)]
 
     (is (thrown-with-msg?
-            clojure.lang.ExceptionInfo
-            #"DynamoDB failure"
-          (api/create-backup client table "aaa")))))
+         clojure.lang.ExceptionInfo
+         #"DynamoDB failure"
+         (api/create-backup client table "aaa")))))
 
 
 (deftest test-tag-resource

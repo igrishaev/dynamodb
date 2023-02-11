@@ -1,5 +1,6 @@
 (ns dynamodb.client
   (:import
+   java.io.InputStream
    java.net.URI)
   (:require
    [cheshire.core :as json]
@@ -68,39 +69,39 @@
                  (json/parse-stream r keyword))
 
                (as-> data-parsed
-                   (let [{:keys [__type
-                                 Message]}
-                         data-parsed]
+                     (let [{:keys [__type
+                                   Message]}
+                           data-parsed]
 
-                     (if __type
+                       (if __type
 
-                       (let [uri
-                             (new URI __type)
+                         (let [uri
+                               (new URI __type)
 
-                             exception
-                             (.getFragment uri)
+                               exception
+                               (.getFragment uri)
 
-                             path
-                             (.getPath uri)]
+                               path
+                               (.getPath uri)]
 
-                         {:error? true
-                          :status status
-                          :path path
-                          :exception exception
-                          :message Message
-                          :payload data
-                          :target target})
+                           {:error? true
+                            :status status
+                            :path path
+                            :exception exception
+                            :message Message
+                            :payload data
+                            :target target})
 
-                       data-parsed)))
+                         data-parsed)))
 
                (as-> response
-                   (if (and (get response :error?) throw?)
-                     (throw (ex-info "DynamoDB failure" response))
-                     response)))))
+                     (if (and (get response :error?) throw?)
+                       (throw (ex-info "DynamoDB failure" response))
+                       response)))))
 
         (as-> response
-            (let [{:as response :keys [error]}
-                  @response]
-              (if error
-                (throw error)
-                response))))))
+              (let [{:as response :keys [error]}
+                    @response]
+                (if error
+                  (throw error)
+                  response))))))
