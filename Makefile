@@ -15,3 +15,6 @@ lint:
 
 lint-fix:
 	lein cljfmt fix
+
+release:
+	lein release
