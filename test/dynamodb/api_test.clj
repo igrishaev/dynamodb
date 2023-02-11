@@ -350,10 +350,10 @@
                        :user/name "Ivan"
                        :user/test 3}
                       {:sql-condition "#foo in (:one, :two, :three)"
-                       :attr-keys {:foo :user/foo}
-                       :attr-vals {:one 1
-                                   :two 2
-                                   :three 3}
+                       :attr-keys {"#foo" :user/foo}
+                       :attr-vals {":one" 1
+                                   ":two" 2
+                                   ":three" 3}
                        :return-values const/return-values-all-old})
 
         resp3
@@ -398,9 +398,9 @@
                        :user/name "Ivan"
                        :user/foo 3}
                       {:sql-condition "#foo in (:ten, :eleven)"
-                       :attr-keys {:foo :user/foo}
-                       :attr-vals {:ten 10
-                                   :eleven 11}})
+                       :attr-keys {"#foo" :user/foo}
+                       :attr-vals {":ten" 10
+                                   ":eleven" 11}})
 
         resp3
         (api/put-item CLIENT
@@ -481,8 +481,7 @@
                       table
                       {:user/id 1
                        :user/name "Ivan"}
-                      {:attr-keys {:kek :test/kek}
-                       :attrs-get [:kek "bar.baz[1]" "abc" "foo"]})]
+                      {:attrs-get [:test/kek "bar.baz[1]" "abc" "foo"]})]
 
     (is (= {:Item {:test/kek "123"
                    :bar {:baz [2]}
@@ -545,10 +544,10 @@
                          table
                          {:user/id 1 :user/name "Ivan"}
                          {:sql-condition "#kek in (:foo, :bar, :baz)"
-                          :attr-keys {:kek :test/kek}
-                          :attr-vals {:foo 1
-                                      :bar 99
-                                      :baz 3}})
+                          :attr-keys {"#kek" :test/kek}
+                          :attr-vals {":foo" 1
+                                      ":bar" 99
+                                      ":baz" 3}})
 
         resp3
         (api/get-item CLIENT
@@ -559,7 +558,7 @@
     (is (nil? resp3))))
 
 
-(deftest test-delete-item-condition-failes
+(deftest test-delete-item-condition-fails
 
   (let [table
         (make-table-name)
@@ -579,10 +578,10 @@
                          table
                          {:user/id 1 :user/name "Ivan"}
                          {:sql-condition "#kek in (:foo, :bar, :baz)"
-                          :attr-keys {:kek :test/kek}
-                          :attr-vals {:foo 1
-                                      :bar 2
-                                      :baz 3}})
+                          :attr-keys {"#kek" :test/kek}
+                          :attr-vals {":foo" 1
+                                      ":bar" 2
+                                      ":baz" 3}})
 
         resp3
         (api/get-item CLIENT
@@ -634,13 +633,13 @@
                          {:user/id 1
                           :user/name "Ivan"}
                          {:sql-condition "#id = :one"
-                          :attr-keys {:id :user/id
-                                      :kek :test/kek
-                                      :numbers :kek/numbers
-                                      :lol :test/lol}
-                          :attr-vals {:num 123
-                                      :one 1
-                                      :drop #{1 5}}
+                          :attr-keys {"#id" :user/id
+                                      "#kek" :test/kek
+                                      "#numbers" :kek/numbers
+                                      "#lol" :test/lol}
+                          :attr-vals {":num" 123
+                                      ":one" 1
+                                      ":drop" #{1 5}}
                           :set {"Foobar" :num}
                           :add {"amount" :one}
                           :delete {:numbers :drop}
@@ -695,8 +694,8 @@
 
         params
         {:sql-key "#id = :one"
-         :attr-keys {:id :user/id}
-         :attr-vals {:one 1}
+         :attr-keys {"#id" :user/id}
+         :attr-vals {":one" 1}
          :limit 1}
 
         resp1
@@ -770,10 +769,10 @@
 
         params
         {:sql-filter "#foo = :two"
-         :attrs-get [:foo :name]
-         :attr-keys {:foo :test/foo
-                     :name :user/name}
-         :attr-vals {:two 2}
+         :attrs-get [:test/foo "#name"]
+         :attr-keys {"#foo" :test/foo
+                     "#name" :user/name}
+         :attr-vals {":two" 2}
          :limit 2}
 
         resp1
@@ -836,16 +835,12 @@
         (api/batch-get-item CLIENT
                             {table1 {:keys [{:user/id 1
                                              :user/name "Ivan"}]
-                                     :attr-keys {:id :user/id
-                                                 :foo :test/foo}
-                                     :attrs-get [:id :foo]}
+                                     :attrs-get [:user/id :test/foo]}
                              table2 {:keys [{:user/id 2
                                              :user/name "Huan"}
                                             {:user/id 99
                                              :user/name "Foo"}]
-                                     :attrs-get [:name :foo]
-                                     :attr-keys {:name :user/name
-                                                 :foo :test/foo}}})]
+                                     :attrs-get [:user/name :test/foo]}})]
 
     (is (= {:Responses
             {(keyword table1)

@@ -1,21 +1,11 @@
 (ns dynamodb.params
   (:require
-   [clojure.string :as str]
-   [dynamodb.util :as util]
-   [dynamodb.encode :refer [encode-attrs]]
+   [dynamodb.encode :refer [encode encode-attrs]]
    [dynamodb.transform :as transform]))
 
 
-(defn- -enc-attr-vals [attr-vals]
-  (-> attr-vals
-      (encode-attrs)
-      (util/update-keys str)))
-
-
-(defn- -enc-attr-to-get [attr-to-get]
-  (->> attr-to-get
-       (map transform/keyword->name-placeholder)
-       (str/join ", ")))
+(defn- key-alias []
+  (str "#" (gensym "attr")))
 
 
 (defn- -remap-key-schema [key-schema]
@@ -90,20 +80,49 @@
 
 (defparam :attr-keys
   [params attr-keys]
-  (assoc params :ExpressionAttributeNames
-         (transform/encode-attr-names attr-keys)))
+  (reduce-kv
+   (fn [acc k v]
+     (assoc-in acc
+               [:ExpressionAttributeNames k]
+               v))
+   params
+   attr-keys))
 
 
 (defparam :attr-vals
   [params attr-vals]
-  (assoc params :ExpressionAttributeValues
-         (-enc-attr-vals attr-vals)))
+  (reduce-kv
+   (fn [acc k v]
+     (assoc-in acc
+               [:ExpressionAttributeValues k]
+               (encode v)))
+   params
+   attr-vals))
+
+
+(defn +join [acc string]
+  (if acc
+    (str acc ", " string)
+    string))
 
 
 (defparam :attrs-get
   [params attrs-get]
-  (assoc params :ProjectionExpression
-         (-enc-attr-to-get attrs-get)))
+  (reduce
+   (fn [acc attr]
+     (cond
+       (keyword? attr)
+       (let [ka (key-alias)]
+         (-> acc
+             (assoc-in [:ExpressionAttributeNames ka] attr)
+             (update :ProjectionExpression +join ka)))
+       (string? attr)
+       (-> acc
+           (update :ProjectionExpression +join attr))
+       :else
+       (throw (ex-info "Wrong attribute" {:attr attr}))))
+   params
+   attrs-get))
 
 
 (defparam :backup

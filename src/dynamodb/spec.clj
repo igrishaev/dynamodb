@@ -116,9 +116,8 @@
   (s/or :keyword keyword?
         :string ::ne-string))
 
-
 (s/def ::attr
-  ::kw-or-string)
+  keyword?)
 
 
 (s/def ::item
@@ -129,12 +128,24 @@
   ::ne-string)
 
 
+(s/def ::attr-name-alias
+  (s/and ::ne-string
+         (fn [string]
+           (str/starts-with? string "#"))))
+
+
+(s/def ::attr-value-alias
+  (s/and ::ne-string
+         (fn [string]
+           (str/starts-with? string ":"))))
+
+
 (s/def ::attr-keys
-  (s/map-of keyword? keyword?))
+  (s/map-of ::attr-name-alias ::attr))
 
 
 (s/def ::attr-vals
-  (s/map-of keyword? any?))
+  (s/map-of ::attr-value-alias any?))
 
 
 (s/def ::consistent-read?
@@ -409,3 +420,24 @@
                      ::local-indexes
                      ::stream-spec
                      ::sse-spec])))))
+
+
+(s/fdef api/update-item
+  :args
+  (s/cat :client ::client
+         :table ::table
+         :key ::item
+         :options
+         (s/?
+          (s/nilable
+           (s/keys
+            :opt-un [::sql-condition
+                     ::attr-keys
+                     ::attr-vals
+                     ::set
+                     ::add
+                     ::remove
+                     ::delete
+                     ::return-consumed-capacity
+                     ::return-item-collection-metrics
+                     ::return-values])))))
