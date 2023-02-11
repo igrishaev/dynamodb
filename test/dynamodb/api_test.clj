@@ -596,11 +596,11 @@
             :message "The conditional request failed"
             :payload
             {:TableName table
-             :Key #:user{:id {:N 1} :name {:S "Ivan"}}
+             :Key #:user{:id {:N "1"} :name {:S "Ivan"}}
              :ConditionExpression "#kek in (:foo, :bar, :baz)"
              :ExpressionAttributeNames {"#kek" :test/kek}
              :ExpressionAttributeValues
-             {":foo" {:N 1} ":bar" {:N 2} ":baz" {:N 3}}}
+             {":foo" {:N "1"} ":bar" {:N "2"} ":baz" {:N "3"}}}
             :target "DeleteItem"}
 
            resp2))

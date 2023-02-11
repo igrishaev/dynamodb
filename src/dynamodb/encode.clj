@@ -3,8 +3,9 @@
   https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_AttributeValue.html
   "
   (:require
-   [dynamodb.util :as util]
-   [dynamodb.codec :as codec]))
+   [cheshire.core :as json]
+   [dynamodb.codec :as codec]
+   [dynamodb.util :as util]))
 
 
 (defprotocol IEncode
@@ -41,7 +42,7 @@
 
   Number
   (-encode [this]
-    {:N this})
+    {:N (json/generate-string this)})
 
   nil
   (-encode [_this]
@@ -60,7 +61,7 @@
     (let [item (first this)]
       (cond
         (number? item)
-        {:NS this}
+        {:NS (set (map json/generate-string this))}
 
         (string? item)
         {:SS this}

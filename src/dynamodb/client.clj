@@ -70,6 +70,7 @@
 
                (as-> data-parsed
                      (let [{:keys [__type
+                                   message ;; yandexdb
                                    Message]}
                            data-parsed]
 
@@ -88,7 +89,7 @@
                             :status status
                             :path path
                             :exception exception
-                            :message Message
+                            :message (or Message message)
                             :payload data
                             :target target})
 

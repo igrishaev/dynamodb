@@ -9,7 +9,7 @@
 
 (deftest test-encode-ok
 
-  (is (= {:N 0}
+  (is (= {:N "0"}
          (encode 0)))
 
   (is (= {:S "hello"}
@@ -27,17 +27,17 @@
                        (byte-array [7 8 9])})
              (update :BS set))))
 
-  (is (= {:L [{:N 1} {:S "two"} {:BOOL false} {:NULL true}]}
+  (is (= {:L [{:N "1"} {:S "two"} {:BOOL false} {:NULL true}]}
          (encode (list 1 "two" false nil))))
 
-  (is (= {:L [{:N 1} {:S "two"} {:BOOL false} {:NULL true}]}
+  (is (= {:L [{:N "1"} {:S "two"} {:BOOL false} {:NULL true}]}
          (encode [1 "two" false nil])))
 
   (is (= {:M
-          {"foo" {:N 1}
+          {"foo" {:N "1"}
            "bar" {:BOOL true}
            "olo"
-           {:M {"test1" {:L [{:N 1} {:N 2} {:N 3}]}
+           {:M {"test1" {:L [{:N "1"} {:N "2"} {:N "3"}]}
                 "test2" {:NULL true}}}}}
 
          (encode {"foo" 1
@@ -45,7 +45,7 @@
                   "olo" {"test1" [1 2 3]
                          "test2" nil}})))
 
-  (is (= {:M {:foo/bar {:NS #{1 3 2}}
+  (is (= {:M {:foo/bar {:NS #{"1" "3" "2"}}
               :bar/foo {:S "hello"}}}
          (encode {:foo/bar #{1 2 3}
                   :bar/foo "hello"})))
@@ -60,7 +60,7 @@
               {:S "test/hello"}]}
          (encode ['foo 'bar 'test/hello])))
 
-  (is (= {:NS #{4 6 5}}
+  (is (= {:NS #{"4" "6" "5"}}
          (encode #{4 5 6})))
 
   (is (= {:SS #{"a" "b" "c"}}
@@ -84,7 +84,7 @@
 
 (deftest test-encode-attrs
 
-  (is (= {:foo/test1 {:N 1}
+  (is (= {:foo/test1 {:N "1"}
           :bar/test2 {:L [{:S "hello"}]}}
          (encode-attrs {:foo/test1 1
                         :bar/test2 ["hello"]}))))

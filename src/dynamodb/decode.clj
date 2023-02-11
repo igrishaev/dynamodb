@@ -4,8 +4,8 @@
   "
   (:require
    [cheshire.core :as json]
-   [dynamodb.util :as util]
-   [dynamodb.codec :as codec]))
+   [dynamodb.codec :as codec]
+   [dynamodb.util :as util]))
 
 
 (defn decode-bytes [string]

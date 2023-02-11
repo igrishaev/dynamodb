@@ -4,3 +4,4 @@
 - write docs
 - release
 - improve hex/bytes
+- make-client map

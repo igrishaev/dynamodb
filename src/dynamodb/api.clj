@@ -1,8 +1,8 @@
 (ns dynamodb.api
   (:import
-   java.net.URI
    #_:clj-kondo/ignore java.util.List
-   #_:clj-kondo/ignore java.util.Map)
+   #_:clj-kondo/ignore java.util.Map
+   java.net.URI)
   (:require
    [dynamodb.client :as client]
    [dynamodb.constant :as const]
