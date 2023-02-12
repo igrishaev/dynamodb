@@ -24,3 +24,26 @@
 
     (is ExpressionAttributeNames)
     (is ExpressionAttributeValues)))
+
+
+(deftest test-param-add
+
+  (let [params
+        (set-param {:foo 1}
+                   :add
+                   {:user/id 1
+                    "#colors" #{"r" "g" "b"}})
+
+        {:keys [UpdateExpression
+                ExpressionAttributeNames
+                ExpressionAttributeValues]}
+        params]
+
+    (is (= 1 params))
+
+    (is (re-matches
+         #" SET #attr\d+ = fooo\(:test\),  #fooo = :value\d+"
+         UpdateExpression))
+
+    (is ExpressionAttributeNames)
+    (is ExpressionAttributeValues)))
