@@ -1,5 +1,6 @@
 (ns dynamodb.params
   (:require
+   [dynamodb.sql :as sql]
    [dynamodb.encode :refer [encode encode-attrs]]
    [dynamodb.transform :as transform]))
 
@@ -331,6 +332,45 @@
 
 (defparam :set
   [params set]
+
+  (loop [[kv & kvs] set
+         acc params]
+
+    (if-not kv
+      acc
+      (let [[k v] kv
+            more? (some? kvs)
+            ka (key-alias)
+            va (val-alias)]
+        (recur kvs
+               (cond-> acc
+
+                 (keyword? k)
+                 (->
+                  (assoc-in [:ExpressionAttributeNames ka] k)
+                  (update :UpdateExpression str " " ka))
+
+                 (string? k)
+                 (update :UpdateExpression str " " k)
+
+                 :then
+                 (update :UpdateExpression str " = ")
+
+                 (sql/sql? v)
+                 (update :UpdateExpression str v)
+
+                 (not (sql/sql? v))
+                 (->
+                  (assoc-in [:ExpressionAttributeValues va] (encode v))
+                  (update :UpdateExpression str va))
+
+                 more?
+                 (update :UpdateExpression str ", ")
+
+
+                 )))))
+
+  #_
   (-update-expression params (transform/set-expr set)))
 
 
