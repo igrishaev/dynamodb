@@ -1,12 +1,16 @@
 (ns dynamodb.params
   (:require
-   [dynamodb.sql :as sql]
    [dynamodb.encode :refer [encode encode-attrs]]
+   [dynamodb.sql :as sql]
    [dynamodb.transform :as transform]))
 
 
 (defn- key-alias []
   (str "#" (gensym "attr")))
+
+
+(defn- val-alias []
+  (str ":" (gensym "value")))
 
 
 (defn- -remap-key-schema [key-schema]
@@ -331,47 +335,43 @@
 
 
 (defparam :set
-  [params set]
+  [params set-form]
 
-  (loop [[kv & kvs] set
-         acc params]
+  (if-not set-form
+    params
+    (loop [[kv & kvs] set-form
+           acc (update params :UpdateExpression str \space "SET")]
 
-    (if-not kv
-      acc
-      (let [[k v] kv
-            more? (some? kvs)
-            ka (key-alias)
-            va (val-alias)]
-        (recur kvs
-               (cond-> acc
+      (if-not kv
+        acc
+        (let [[k v] kv
+              more? (some? kvs)
+              ka (key-alias)
+              va (val-alias)]
+          (recur kvs
+                 (cond-> acc
 
-                 (keyword? k)
-                 (->
-                  (assoc-in [:ExpressionAttributeNames ka] k)
-                  (update :UpdateExpression str " " ka))
+                   (keyword? k)
+                   (->
+                    (assoc-in [:ExpressionAttributeNames ka] k)
+                    (update :UpdateExpression str " " ka))
 
-                 (string? k)
-                 (update :UpdateExpression str " " k)
+                   (string? k)
+                   (update :UpdateExpression str " " k)
 
-                 :then
-                 (update :UpdateExpression str " = ")
+                   :then
+                   (update :UpdateExpression str " = ")
 
-                 (sql/sql? v)
-                 (update :UpdateExpression str v)
+                   (sql/sql? v)
+                   (update :UpdateExpression str v)
 
-                 (not (sql/sql? v))
-                 (->
-                  (assoc-in [:ExpressionAttributeValues va] (encode v))
-                  (update :UpdateExpression str va))
+                   (not (sql/sql? v))
+                   (->
+                    (assoc-in [:ExpressionAttributeValues va] (encode v))
+                    (update :UpdateExpression str va))
 
-                 more?
-                 (update :UpdateExpression str ", ")
-
-
-                 )))))
-
-  #_
-  (-update-expression params (transform/set-expr set)))
+                   more?
+                   (update :UpdateExpression str ", "))))))))
 
 
 (defparam :remove

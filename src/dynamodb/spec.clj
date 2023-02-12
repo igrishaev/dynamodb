@@ -158,7 +158,7 @@
 
 
 (s/def ::set
-  (s/map-of ::kw-or-string ::kw-or-string))
+  (s/map-of ::kw-or-string any?))
 
 (s/def ::add
   (s/map-of ::kw-or-string ::kw-or-string))

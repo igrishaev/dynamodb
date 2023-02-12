@@ -4,11 +4,16 @@
    #_:clj-kondo/ignore java.util.Map
    java.net.URI)
   (:require
+   [dynamodb.sql :as sql]
    [dynamodb.client :as client]
    [dynamodb.constant :as const]
    [dynamodb.mask :as mask]
    [dynamodb.params :refer [pre-process]]
    [dynamodb.response :refer [post-process]]))
+
+
+(defn sql [string]
+  (sql/sql string))
 
 
 (defn make-client

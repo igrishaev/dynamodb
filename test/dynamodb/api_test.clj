@@ -639,11 +639,10 @@
                                        "#numbers" :kek/numbers
                                        "#counter" :test/counter
                                        "#lol" :test/lol}
-                          :attr-values {":num" 123
-                                        ":one" 1
+                          :attr-values {":one" 1
                                         ":drop" #{1 5}}
-                          :set {"Foobar" :num
-                                "#counter" "#counter + :one"}
+                          :set {"Foobar" 123
+                                "#counter" (api/sql "#counter + :one")}
                           :add {"amount" :one}
                           :delete {:numbers :drop}
                           :remove ["#kek" "abc" :lol]})
