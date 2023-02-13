@@ -1,8 +1,7 @@
 (ns dynamodb.params
   (:require
    [dynamodb.encode :refer [encode encode-attrs]]
-   [dynamodb.sql :as sql]
-   [dynamodb.transform :as transform]))
+   [dynamodb.sql :as sql]))
 
 
 (defn- key-alias []
@@ -46,16 +45,6 @@
       (assoc :ProvisionedThroughput
              (-remap-provisioned-throughput
               provisioned-throughput)))))
-
-
-(defn- -update-expression
-  [params expr]
-  (if expr
-    (update params :UpdateExpression
-            str
-            \space
-            expr)
-    params))
 
 
 ;;
@@ -324,44 +313,6 @@
   (assoc params :TotalSegments total-segments))
 
 
-
-#_
-(if-not set-form
-    params
-    (loop [[kv & kvs] set-form
-           acc (update params :UpdateExpression str \space "SET")]
-
-      (if-not kv
-        acc
-        (let [[k v] kv
-              more? (some? kvs)
-              ka (key-alias)
-              va (val-alias)]
-          (recur kvs
-                 (cond-> acc
-
-                   (keyword? k)
-                   (->
-                    (assoc-in [:ExpressionAttributeNames ka] k)
-                    (update :UpdateExpression str " " ka))
-
-                   (string? k)
-                   (update :UpdateExpression str " " k)
-
-                   :then
-                   (update :UpdateExpression str " = ")
-
-                   (sql/sql? v)
-                   (update :UpdateExpression str v)
-
-                   (not (sql/sql? v))
-                   (->
-                    (assoc-in [:ExpressionAttributeValues va] (encode v))
-                    (update :UpdateExpression str va))
-
-                   more?
-                   (update :UpdateExpression str ", ")))))))
-
 (defparam :add
   [params add-form]
 
@@ -398,12 +349,44 @@
                     (update :UpdateExpression str va))
 
                    more?
-                   (update :UpdateExpression str ", "))))))))
+                   (update :UpdateExpression str ","))))))))
 
 
 (defparam :delete
-  [params delete]
-  (-update-expression params (transform/delete-expr delete)))
+  [params delete-form]
+
+  (if-not delete-form
+    params
+    (loop [[kv & kvs] delete-form
+           acc (update params :UpdateExpression str \space "DELETE")]
+
+      (if-not kv
+        acc
+        (let [[k v] kv
+              more? (some? kvs)
+              ka (key-alias)
+              va (val-alias)]
+          (recur kvs
+                 (cond-> acc
+
+                   (keyword? k)
+                   (->
+                    (assoc-in [:ExpressionAttributeNames ka] k)
+                    (update :UpdateExpression str " " ka))
+
+                   (string? k)
+                   (update :UpdateExpression str " " k)
+
+                   :then
+                   (update :UpdateExpression str " ")
+
+                   :then
+                   (->
+                    (assoc-in [:ExpressionAttributeValues va] (encode v))
+                    (update :UpdateExpression str va))
+
+                   more?
+                   (update :UpdateExpression str ","))))))))
 
 
 (defparam :set
@@ -443,12 +426,36 @@
                     (update :UpdateExpression str va))
 
                    more?
-                   (update :UpdateExpression str ", "))))))))
+                   (update :UpdateExpression str ","))))))))
 
 
 (defparam :remove
-  [params remove]
-  (-update-expression params (transform/remove-expr remove)))
+  [params remove-form]
+
+  (if-not remove-form
+    params
+
+    (loop [[k & ks] remove-form
+           acc (update params :UpdateExpression str \space "REMOVE")]
+
+      (if-not k
+        acc
+        (let [more? (some? ks)
+              ka (key-alias)]
+
+          (recur ks
+                 (cond-> acc
+
+                   (keyword? k)
+                   (->
+                    (assoc-in [:ExpressionAttributeNames ka] k)
+                    (update :UpdateExpression str " " ka))
+
+                   (string? k)
+                   (update :UpdateExpression str " " k)
+
+                   more?
+                   (update :UpdateExpression str ","))))))))
 
 
 (defn pre-process [params]

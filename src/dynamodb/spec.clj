@@ -112,7 +112,6 @@
   ::ne-string)
 
 
-;; TODO: clarify
 (s/def ::kw-or-string
   (s/or :keyword keyword?
         :string ::ne-string))
@@ -160,14 +159,17 @@
 (s/def ::set
   (s/map-of ::kw-or-string any?))
 
+
 (s/def ::add
-  (s/map-of ::kw-or-string ::kw-or-string))
+  (s/map-of ::kw-or-string any?))
+
 
 (s/def ::remove
   (s/coll-of ::kw-or-string))
 
+
 (s/def ::delete
-  (s/map-of ::kw-or-string ::kw-or-string))
+  (s/map-of ::kw-or-string set?))
 
 
 (s/def ::scan-forward?

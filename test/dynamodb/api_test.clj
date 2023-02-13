@@ -636,16 +636,13 @@
                          {:sql-condition "#id = :one"
                           :attr-names {"#id" :user/id
                                        "#kek" :test/kek
-                                       "#numbers" :kek/numbers
-                                       "#counter" :test/counter
-                                       "#lol" :test/lol}
-                          :attr-values {":one" 1
-                                        ":drop" #{1 5}}
+                                       "#counter" :test/counter}
+                          :attr-values {":one" 1}
                           :set {"Foobar" 123
                                 "#counter" (api/sql "#counter + :one")}
-                          :add {"amount" :one}
-                          :delete {:numbers :drop}
-                          :remove ["#kek" "abc" :lol]})
+                          :add {"amount" 1}
+                          :delete {:kek/numbers #{1 5}}
+                          :remove ["#kek" "abc" :test/lol]})
 
         resp3
         (api/get-item CLIENT
@@ -912,9 +909,9 @@
         (assoc CLIENT :throw? true)]
 
     (is (thrown-with-msg?
-            clojure.lang.ExceptionInfo
-            #"DynamoDB failure"
-          (api/create-backup client table "aaa")))))
+         clojure.lang.ExceptionInfo
+         #"DynamoDB failure"
+         (api/create-backup client table "aaa")))))
 
 
 (deftest test-tag-resource

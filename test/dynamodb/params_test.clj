@@ -29,7 +29,7 @@
                set)))
 
     (is (re-matches
-         #" SET #attr\d+ = fooo\(:test\),  #fooo = :value\d+"
+         #" SET #attr\d+ = fooo\(:test\), #fooo = :value\d+"
          UpdateExpression))))
 
 
@@ -57,5 +57,55 @@
                set)))
 
     (is (re-matches
-         #" ADD #attr\d+ :value\d+,  #colors :value\d+"
+         #" ADD #attr\d+ :value\d+, #colors :value\d+"
+         UpdateExpression))))
+
+
+(deftest test-param-remove
+
+  (let [params
+        (set-param {:foo 1}
+                   :remove
+                   [:user/id "#foo" "user_name"])
+
+        {:keys [UpdateExpression
+                ExpressionAttributeNames]}
+        params]
+
+    (is (= #{:user/id}
+           (-> ExpressionAttributeNames
+               vals
+               set)))
+
+    (is (re-matches
+         #" REMOVE #attr\d+, #foo, user_name"
+         UpdateExpression))))
+
+
+(deftest test-param-delete
+
+  (let [params
+        (set-param {:foo 1}
+                   :delete
+                   {:profile/tags #{"foo" "bar" "baz"}
+                    "numbers" #{1 2 3}})
+
+        {:keys [UpdateExpression
+                ExpressionAttributeNames
+                ExpressionAttributeValues]}
+        params]
+
+    (is (= #{:profile/tags}
+           (-> ExpressionAttributeNames
+               vals
+               set)))
+
+    (is (= #{{:NS #{"3" "1" "2"}}
+             {:SS #{"foo" "bar" "baz"}}}
+           (-> ExpressionAttributeValues
+               vals
+               set)))
+
+    (is (re-matches
+         #" DELETE #attr\d+ :value\d+, numbers :value\d+"
          UpdateExpression))))
