@@ -18,12 +18,19 @@
                 ExpressionAttributeValues]}
         params]
 
+    (is (= #{:user/id}
+           (-> ExpressionAttributeNames
+               vals
+               set)))
+
+    (is (= #{{:N "42"}}
+           (-> ExpressionAttributeValues
+               vals
+               set)))
+
     (is (re-matches
          #" SET #attr\d+ = fooo\(:test\),  #fooo = :value\d+"
-         UpdateExpression))
-
-    (is ExpressionAttributeNames)
-    (is ExpressionAttributeValues)))
+         UpdateExpression))))
 
 
 (deftest test-param-add
@@ -39,11 +46,16 @@
                 ExpressionAttributeValues]}
         params]
 
-    (is (= 1 params))
+    (is (= #{:user/id}
+           (-> ExpressionAttributeNames
+               vals
+               set)))
+
+    (is (= #{{:N "1"} {:SS #{"b" "r" "g"}}}
+           (-> ExpressionAttributeValues
+               vals
+               set)))
 
     (is (re-matches
-         #" SET #attr\d+ = fooo\(:test\),  #fooo = :value\d+"
-         UpdateExpression))
-
-    (is ExpressionAttributeNames)
-    (is ExpressionAttributeValues)))
+         #" ADD #attr\d+ :value\d+,  #colors :value\d+"
+         UpdateExpression))))
