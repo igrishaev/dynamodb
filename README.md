@@ -12,7 +12,17 @@ dependencies. GraalVM/native-image friendly.
 - [Benefits](#benefits)
 - [Installation](#installation)
 - [API Implemented](#api-implemented)
+- [Who Uses It](#who-uses-it)
 - [Usage](#usage)
+  * [The Client](#the-client)
+  * [Create a Table](#create-a-table)
+  * [List Tables](#list-tables)
+  * [Put Item](#put-item)
+  * [Get Item](#get-item)
+  * [Update Item](#update-item)
+  * [Delete Item](#delete-item)
+  * [Query](#query)
+  * [Scan](#scan)
 - [Raw API access](#raw-api-access)
 - [Tests](#tests)
 
@@ -32,6 +42,7 @@ dependencies. GraalVM/native-image friendly.
   file in AWS Lambda.
 - Both encoding & decoding are extendable with protocols & multimethods.
 - Raw API access for rare cases.
+- Specs for better input validation.
 - Compatible with [Yandex DB][ydb].
 
 ## Installation
@@ -126,10 +137,84 @@ hosted in Yandex Cloud as a binary file compiled with GraalVM. It uses the
 library to reach Yandex DB to track the state. In turn, Yandex DB is a cloud
 database that mimics DynamoDB and serves a subset of its HTTP API.
 
-## Examples
+## Usage
+
+First, import the library. You need only the `.api` module:
+
+```clojure
+(require '[dynamodb.api :as api])
+```
+
+### The Client
+
+Prepare a client object. The first four parameters are mandatory:
+
+```clojure
+(def CLIENT
+  (api/make-client "aws-public-key"
+                   "aws-secret-key"
+                   "https://aws.dynamodb.endpoint.com/some/path"
+                   "aws-region"
+                   {...}))
+```
+
+For Yandex DB, the region is something like "ru-central1".
+
+The fifth parameter is a map of options to override:
+
+| Parameter   | Default      | Description                                                               |
+|-------------+--------------+---------------------------------------------------------------------------|
+| `:throw?`   | `true`       | Whether to throw an exception when get a negative response from DynamoDB. |
+| `:version`  | `"20120810"` | DynamoDB API version.                                                     |
+| `:http-opt` | (see below)  | A map for HTTP Kit default settings.                                      |
+
+The default HTTP settings are:
+
+```clojure
+{:user-agent "com.github.igrishaev/dynamodb"
+ :keepalive (* 30 1000)
+ :insecure? true
+ :follow-redirects false}
+```
+
+### Create a Table
+
+### List Tables
+
+### Put Item
+
+### Get Item
+
+### Update Item
+
+### Delete Item
+
+### Query
+
+### Scan
 
 ## Raw API access
 
+The `api-call` function allows you to interact with DynamoDB on low level. It
+accepts the client, the target name, and a raw payload you'd like send to
+DB. The payload gets sent as-is with no any kind of processing nor interference.
+
+```clojure
+(api/api-call CLIENT
+             "NotImplementedTarget"
+             {:ParamFoo ... :ParamBar ...})
+```
+
 ## Tests
+
+The primary testing module called `api_test.clj` relies on a local DynamoDB
+instance running in Docker. To bootstrap it, execute the command:
+
+```bash
+make docker-up
+```
+
+which spawns `amazon/dynamodb-local` image on port 8000. Then connect to the REPL
+and run the API tests from Emacs like you usually do.
 
 Ivan Grishaev, 2023
