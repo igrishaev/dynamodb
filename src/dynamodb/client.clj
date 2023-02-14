@@ -1,14 +1,37 @@
 (ns dynamodb.client
-  (:import
-   java.io.InputStream
-   java.net.URI)
   (:require
    [cheshire.core :as json]
    [dynamodb.sign :as sign]
    [clojure.java.io :as io]
    [dynamodb.mask :as mask]
    [dynamodb.time :as time]
-   [org.httpkit.client :as http]))
+   [org.httpkit.client :as http])
+  (:import
+   dynamodb.mask.Mask
+   java.io.InputStream
+   java.net.URI
+   java.util.Map))
+
+
+(def defaults
+  {:user-agent "com.github.igrishaev/dynamodb"
+   :keepalive (* 30 1000)
+   :insecure? true
+   :follow-redirects false})
+
+
+(defrecord Client
+           [^Mask    access-key
+            ^Mask    secret-key
+            ^String  endpoint
+            ^String  content-type
+            ^String  host
+            ^String  path
+            ^String  service
+            ^String  version
+            ^String  region
+            ^Boolean throw?
+            ^Map     http-opt])
 
 
 (defn make-request
@@ -17,11 +40,11 @@
            region
            access-key
            secret-key
-           endpoint
            content-type
            version
            service
-           throw?]}
+           throw?
+           http-opt]}
    target
    data]
 
@@ -55,11 +78,9 @@
          "x-amz-target" amz-target
          "x-amz-date" date}]
 
-    (-> {:method :post
-         :url endpoint
-         :body payload
-         :headers headers
-         :as :stream}
+    (-> http-opt
+        (assoc :body payload
+               :headers headers)
 
         (http/request
 

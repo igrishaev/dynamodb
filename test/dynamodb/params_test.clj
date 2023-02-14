@@ -109,3 +109,13 @@
     (is (re-matches
          #" DELETE #attr\d+ :value\d+, numbers :value\d+"
          UpdateExpression))))
+
+
+(deftest test-unknown-param
+
+  (is (thrown-with-msg?
+       clojure.lang.ExceptionInfo
+       #"Unknown parameter"
+       (set-param {:foo 1}
+                  :hello
+                  {:aaa "test"}))))

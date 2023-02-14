@@ -19,7 +19,8 @@
   (api/make-client "public-key"
                    "secret-key"
                    (format "http://localhost:%s/foo" PORT)
-                   "voronezh"))
+                   "voronezh"
+                   {:throw? false}))
 
 
 (defn make-table-name []
@@ -40,12 +41,20 @@
 
   (is (= {:path "/foo"
           :service "dynamodb"
+          :throw? false
+          :http-opt
+          {:user-agent "com.github.igrishaev/dynamodb"
+           :keepalive 30000
+           :insecure? true
+           :follow-redirects false
+           :method :post
+           :url "http://localhost:8000/foo"
+           :as :stream}
           :region "voronezh"
           :host "localhost"
           :content-type "application/x-amz-json-1.0"
           :version "20120810"
-          :endpoint "http://localhost:8000/foo"
-          :throw? false}
+          :endpoint "http://localhost:8000/foo"}
          (dissoc CLIENT :access-key :secret-key)))
 
   (is (-> CLIENT :access-key mask/masked?))
@@ -948,3 +957,16 @@
            (-> resp2
                (assoc-in [:payload :ResourceArn] ::DUMMY)
                (update-in [:payload :Tags] set))))))
+
+
+(deftest test-api-call
+
+  (let [resp
+        (api/api-call CLIENT
+                      "ListTables"
+                      {:Limit 99})
+
+        {:keys [TableNames]}
+        resp]
+
+    (is (vector? TableNames))))

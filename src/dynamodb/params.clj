@@ -64,6 +64,14 @@
      ~@body))
 
 
+(defmethod set-param :default
+  [_params param value]
+  (throw (ex-info "Unknown parameter"
+                  {:type ::wrong-parameter
+                   :param param
+                   :value value})))
+
+
 (defparam :attr-defs
   [params attr-defs]
   (assoc params :AttributeDefinitions

@@ -18,13 +18,20 @@
 
 (defn make-client
 
-  ([access-key secret-key endpoint region]
+  ([^String access-key
+    ^String secret-key
+    ^String endpoint
+    ^String region]
    (make-client access-key secret-key endpoint region nil))
 
-  ([access-key secret-key endpoint region
+  ([^String access-key
+    ^String secret-key
+    ^String endpoint
+    ^String region
     {:keys [throw?
-            version]
-     :or {throw? false
+            version
+            http-opt]
+     :or {throw? true
           version const/version-20120810}}]
 
    (let [uri
@@ -34,18 +41,27 @@
          (.getHost uri)
 
          path
-         (.getPath uri)]
+         (.getPath uri)
 
-     {:access-key (mask/mask access-key)
-      :secret-key (mask/mask secret-key)
-      :endpoint endpoint
-      :content-type "application/x-amz-json-1.0"
-      :host host
-      :path path
-      :service "dynamodb"
-      :version version
-      :region region
-      :throw? throw?})))
+         http-opt
+         (-> client/defaults
+             (merge http-opt)
+             (assoc :method :post
+                    :url endpoint
+                    :as :stream))]
+
+     (client/map->Client
+      {:access-key (mask/mask access-key)
+       :secret-key (mask/mask secret-key)
+       :endpoint endpoint
+       :content-type "application/x-amz-json-1.0"
+       :host host
+       :path path
+       :service "dynamodb"
+       :version version
+       :region region
+       :throw? throw?
+       :http-opt http-opt}))))
 
 
 ;; https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html
@@ -354,3 +370,8 @@
        (pre-process)
        (->> (client/make-request client "TagResource"))
        (post-process))))
+
+
+(defn api-call
+  [client target payload]
+  (client/make-request client target payload))

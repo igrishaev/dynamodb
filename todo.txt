@@ -1,8 +1,4 @@
-- pass http params
 - ? async handler
 - ? with-async?
 - write docs
-- release
 - improve hex/bytes
-- spec kw-or-string
-- add/set/remove/delete kw/string
