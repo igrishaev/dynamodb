@@ -132,10 +132,10 @@ you need something missing in the table below.
 
 [teleward]: https://github.com/igrishaev/teleward
 
-DynamoDB is a part of [Teleward][teleward] -- a Telegram captcha bot. The bot is
+DynamoDB is a part of [Teleward][teleward] — a Telegram captcha bot. The bot is
 hosted in Yandex Cloud as a binary file compiled with GraalVM. It uses the
-library to reach Yandex DB to track the state. In turn, Yandex DB is a cloud
-database that mimics DynamoDB and serves a subset of its HTTP API.
+library to track the state in Yandex DB. In turn, Yandex DB is a cloud database
+that mimics DynamoDB and serves a subset of its HTTP API.
 
 ## Usage
 
