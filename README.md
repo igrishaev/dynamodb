@@ -162,11 +162,11 @@ For Yandex DB, the region is something like "ru-central1".
 
 The fifth parameter is a map of options to override:
 
-| Parameter   | Default      | Description                                                               |
-|-------------|--------------|---------------------------------------------------------------------------|
-| `:throw?`   | `true`       | Whether to throw an exception when get a negative response from DynamoDB. |
-| `:version`  | `"20120810"` | DynamoDB API version.                                                     |
-| `:http-opt` | (see below)  | A map for HTTP Kit default settings.                                      |
+| Parameter   | Default      | Description                                    |
+|-------------|--------------|------------------------------------------------|
+| `:throw?`   | `true`       | Whether to throw a negative DynamoDB response. |
+| `:version`  | `"20120810"` | DynamoDB API version.                          |
+| `:http-opt` | (see below)  | A map of HTTP Kit default settings.            |
 
 The default HTTP settings are:
 
