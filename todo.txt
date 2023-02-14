@@ -1,4 +1,6 @@
+- ? renaming
+- write docs
+- drop api.txt
+- improve hex/bytes
 - ? async handler
 - ? with-async?
-- write docs
-- improve hex/bytes
