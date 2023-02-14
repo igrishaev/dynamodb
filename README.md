@@ -23,6 +23,7 @@ dependencies. GraalVM/native-image friendly.
   * [Delete Item](#delete-item)
   * [Query](#query)
   * [Scan](#scan)
+  * [Other API](#other-api)
 - [Raw API access](#raw-api-access)
 - [Specs](#specs)
 - [Tests](#tests)
@@ -166,6 +167,9 @@ Prepare a client object. The first four parameters are mandatory:
 ```
 
 For Yandex DB, the region is something like "ru-central1".
+
+Both public and secret AWS keys are masked with a special wrapper that prevents
+them from being logged or printed.
 
 The fifth parameter is a map of options to override:
 
@@ -348,7 +352,83 @@ get an exception with ex-info:
 
 ### Query
 
+The Query target allows to seach items that partially match a primary
+key. Imagine the primary key of a table is `:user/id :HASH` and `:user/name
+:RANGE`. Here is what you have in the database:
+
+```clojure
+{:user/id 1
+ :user/name "Ivan"
+ :test/foo 1}
+
+{:user/id 1
+ :user/name "Juan"
+ :test/foo 2}
+
+{:user/id 2
+ :user/name "Huan"
+ :test/foo 3}
+```
+
+Now, to find the items whose `:user/id` is 1, execute:
+
+```clojure
+(api/query CLIENT
+           table
+           {:sql-key "#id = :one"
+            :attr-names {"#id" :user/id}
+            :attr-values {":one" 1}
+            :limit 1})
+```
+
+Result:
+
+```
+{:Items [{:user/id 1
+          :test/foo 1
+          :user/name "Ivan"}]
+ :Count 1
+ :ScannedCount 1
+ :LastEvaluatedKey #:user{:id 1
+                          :name "Ivan"}}
+```
+
+To propagate to the next page, fetch the `LastEvaluatedKey` field from the
+result and pass it into the `:start-key` Query parameter.
+
+
 ### Scan
+
+The Scan API goes through the whole table collecting the items that match an
+expression. This is unoptimal yet required sometimes.
+
+```clojure
+(api/scan CLIENT
+          table
+          {:sql-filter "#foo = :two"
+           :attrs-get [:test/foo "#name"]
+           :attr-names {"#foo" :test/foo
+                        "#name" :user/name}
+           :attr-values {":two" 2}
+           :limit 2})
+```
+
+Result:
+
+```
+{:Items [{:test/foo 2
+          :user/name "Ivan"}]
+ :Count 1
+ :ScannedCount 2
+ :LastEvaluatedKey #:user{:id 1
+                          :name "Ivan"}}
+```
+
+Both `LastEvaluatedKey` and `:start-key` parameters work as described above.
+
+### Other API
+
+See the tests, specs, and `dynamodb.api` module for more information.
 
 ## Raw API access
 
@@ -363,6 +443,24 @@ DB. The payload gets sent as-is with no any kind of processing nor interference.
 ```
 
 ## Specs
+
+The library provides a number of specs for the API. Find them in the
+`dynamodb.spec` module. It's not imported by default to prevent the binary file
+growing when compiled with GraalVM. That's a known issue when introducing
+`clojure.spec` adds +20 Mbs to the file.
+
+Still, those specs are usefull for testing and documentation. Import the specs,
+then instrument the functions by calling the `instrument` function:
+
+```clojure
+(require 'dynamodb.spec)
+(require '[clojure.spec.test.alpha :as spec.test])
+
+(spec.test/instrument)
+```
+
+Now if you pass something wrong into one of the library functions, you'll get a
+spec exception.
 
 ## Tests
 
