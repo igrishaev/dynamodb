@@ -1,53 +1,45 @@
-# dynamodb
+# DynamoDB
 
-FIXME: description
+[dynamodb]: https://aws.amazon.com/dynamodb/
+
+A [DynamoDB][dynamodb] driver written in pure Clojure. Lightweight
+dependencies. GraalVM/native-image friendly.
+
+## Table of Contents
+
+<!-- toc -->
+
+- [Benefits](#benefits)
+- [Installation](#installation)
+- [API Implemented](#api-implemented)
+- [Usage](#usage)
+- [Raw API access](#raw-api-access)
+- [Tests](#tests)
+
+<!-- tocstop -->
+
+## Benefits
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Leiningen/Boot:
+
+```
+[com.github.igrishaev/dynamodb "0.1.2"]
+```
+
+Clojure CLI/deps.edn:
+
+```
+com.github.igrishaev/dynamodb {:mvn/version "0.1.2"}
+```
+
+## API Implemented
 
 ## Usage
 
-## Table
+## Raw API access
 
-| sdfs | sdfsfsf | fsfsdf | sdfsdf | fsdfsf |
-|------|---------|--------|--------|--------|
-| sdfs | sdfsdf  | sdfsdf | sdfsdf | sdfsf  |
-| sdfs | sdfs    | `sdfs` | sdfsf  | sdf    |
-|      |         |        |        |        |
+## Tests
 
-
-FIXME: explanation
-
-    $ java -jar dynamodb-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
-
-## License
-
-Copyright © 2023 FIXME
-
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+Ivan Grishaev, 2023
