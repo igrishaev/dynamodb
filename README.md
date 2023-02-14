@@ -63,9 +63,9 @@ com.github.igrishaev/dynamodb {:mvn/version "0.1.2"}
 
 [api-ops]: https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations_Amazon_DynamoDB.html
 
-At the moment, only the most important API targets are implemented. The rest of
-them is a matter of time and copy-paste. Let me know if you need something
-missing in the table below.
+At the moment, only the most important [API targets][api-ops] are
+implemented. The rest of them is a matter of time and copy-paste. Let me know if
+you need something missing in the table below.
 
 <details>
 <summary>Check out the table</summary>
