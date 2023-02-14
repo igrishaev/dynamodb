@@ -24,6 +24,7 @@ dependencies. GraalVM/native-image friendly.
   * [Query](#query)
   * [Scan](#scan)
 - [Raw API access](#raw-api-access)
+- [Specs](#specs)
 - [Tests](#tests)
 
 <!-- tocstop -->
@@ -40,6 +41,8 @@ dependencies. GraalVM/native-image friendly.
 - Quite narrow dependencies: just [HTTP Kit][http-kit] and [Cheshire][cheshire].
 - Compatible with [Native Image][native-image]! Thus, easy to use as a binary
   file in AWS Lambda.
+- Clojure-friendly: handles attributes with namespaces and builds proper SQL
+  expressions.
 - Both encoding & decoding are extendable with protocols & multimethods.
 - Raw API access for rare cases.
 - Specs for better input validation.
@@ -139,11 +142,15 @@ that mimics DynamoDB and serves a subset of its HTTP API.
 
 ## Usage
 
-First, import the library. You need only the `.api` module:
+First, import the library:
 
 ```clojure
 (require '[dynamodb.api :as api])
+(require '[dynamodb.constant :as const])
 ```
+
+The `constant` module is needed sometimes to refer to common DynamoDB values
+like `"PAY_PER_REQUEST"`, `"PROVISIONED"` and so on.
 
 ### The Client
 
@@ -179,9 +186,70 @@ The default HTTP settings are:
 
 ### Create a Table
 
+To create a new table, pass its name, the schema map, and the primary key
+mapping:
+
+```clojure
+(api/create-table CLIENT
+                  "SomeTable"
+                  {:user/id :N
+                   :user/name :S}
+                  {:user/id const/key-type-hash
+                   :user/name const/key-type-range}
+                  {:tags {:foo "hello"}
+                   :table-class const/table-class-standard
+                   :billing-mode const/billing-mode-pay-per-request})
+```
+
 ### List Tables
 
+Tables can be listed by pages. The default page size 100. Once you're reached
+the limit, check out the `LastEvaluatedTableName` field. Pass it to the
+`:start-table` optional argument to propagate to the next page:
+
+```clojure
+(def resp1
+  (api/list-tables CLIENT {:limit 10}))
+
+(def last-table
+  (:LastEvaluatedTableName resp1))
+
+(def resp2
+  (api/list-tables CLIENT
+                   {:limit 10
+                    :start-table last-table}))
+```
+
 ### Put Item
+
+To upsert an item, pass a map that contains the primary attributes:
+
+```clojure
+(api/put-item CLIENT
+              "SomeTable"
+              {:user/id 1
+               :user/name "Ivan"
+               :user/foo 1}
+              {:return-values const/return-values-none})
+```
+
+Pass `:sql-condition` to make the operation conditional. In the example above,
+the `:user/foo` attribute is 1. The second upsert operation checks if
+`:user/foo` is either 1, or 2, or 3, which is true. Thus, it will fail:
+
+```clojure
+(api/put-item CLIENT
+              "SomeTable"
+              {:user/id 1
+               :user/name "Ivan"
+               :user/test 3}
+              {:sql-condition "#foo in (:one, :two, :three)"
+               :attr-names {"#foo" :user/foo}
+               :attr-values {":one" 1
+                             ":two" 2
+                             ":three" 3}
+               :return-values const/return-values-all-old})
+```
 
 ### Get Item
 
@@ -204,6 +272,8 @@ DB. The payload gets sent as-is with no any kind of processing nor interference.
              "NotImplementedTarget"
              {:ParamFoo ... :ParamBar ...})
 ```
+
+## Specs
 
 ## Tests
 
