@@ -214,7 +214,7 @@ instance running in Docker. To bootstrap it, execute the command:
 make docker-up
 ```
 
-which spawns `amazon/dynamodb-local` image on port 8000. Then connect to the REPL
-and run the API tests from Emacs like you usually do.
+It spawns `amazon/dynamodb-local` image on port 8000. Now connect to the REPL
+and run the API tests from your editor as usual.
 
 Ivan Grishaev, 2023
