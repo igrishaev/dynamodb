@@ -24,6 +24,7 @@ dependencies. GraalVM/native-image friendly.
 [cheshire]: https://github.com/dakrone/cheshire
 
 [native-image]: https://www.graalvm.org/22.0/reference-manual/native-image/
+[ydb]: https://cloud.yandex.com/en-ru/services/ydb
 
 - Free from AWS SDK. Everything is implemented with pure JSON + HTTP.
 - Quite narrow dependencies: just [HTTP Kit][http-kit] and [Cheshire][cheshire].
@@ -31,6 +32,7 @@ dependencies. GraalVM/native-image friendly.
   file in AWS Lambda.
 - Both encoding & decoding are extendable with protocols & multimethods.
 - Raw API access for rare cases.
+- Compatible with [Yandex DB][ydb].
 
 ## Installation
 
@@ -52,10 +54,10 @@ com.github.igrishaev/dynamodb {:mvn/version "0.1.2"}
 
 At the moment, only the most important API targets are implemented. The rest of
 them is a matter of time and copy-paste. Let me know if you need something
-missing in that table.
+missing in the table below.
 
-<details open>
-<summary>See the table</summary>
+<details>
+<summary>Check out the table</summary>
 
 | Target                              | Done? | Comment |
 |-------------------------------------|-------|---------|
@@ -115,7 +117,16 @@ missing in that table.
 
 </details>
 
-## Usage
+## Who Uses It
+
+[teleward]: https://github.com/igrishaev/teleward
+
+DynamoDB is a part of [Teleward][teleward] -- a Telegram captcha bot. The bot is
+hosted in Yandex Cloud as a binary file compiled with GraalVM. It uses the
+library to reach Yandex DB to track the state. In turn, Yandex DB is a cloud
+database that mimics DynamoDB and serves a subset of its HTTP API.
+
+## Examples
 
 ## Raw API access
 
