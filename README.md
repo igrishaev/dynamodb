@@ -301,6 +301,24 @@ for nested maps or lists:
 
 ### Update Item
 
+[faraday]: https://github.com/Taoensso/faraday
+
+This operation is the most complex. In AWS SDK or [Faraday][faraday], to update
+secondary attributes on an item, one should build a SQL expression manually
+which involves string formatting, concatenation and similar boring stuff.
+
+```sql
+SET username = :username, email = :email, ...
+```
+
+The `ADD`, `DELETE`, and `REMOVE` expression require manual work as
+well. Composing a proper SQL expression out from a map of values is really
+tough.
+
+The present library solves this problem for you. The `update-item` function
+accepts `:add`, `:set`, `:delete`, and `:remove` parameters which are either maps
+or vectors.
+
 ### Delete Item
 
 Simple deletion of an item:
