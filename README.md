@@ -253,9 +253,98 @@ the `:user/foo` attribute is 1. The second upsert operation checks if
 
 ### Get Item
 
+To get an item, provide its primary key:
+
+```clojure
+(api/get-item CLIENT
+              "SomeTable"
+              {:user/id 1
+               :user/name "Ivan"})
+
+{:Item #:user{:id 1
+              :name "Ivan"
+              :foo 1}}
+```
+
+There is an option to get only the attributes you need or even sub-attributes
+for nested maps or lists:
+
+```clojure
+;; put some complex values
+(api/put-item CLIENT
+              "SomeTable"
+              {:user/id 1
+               :user/name "Ivan"
+               :test/kek "123"
+               :test/foo 1
+               :abc nil
+               :foo "lol"
+               :bar {:baz [1 2 3]}})
+
+;; pass a list of attributes/paths into the `:attrs-get` param
+(api/get-item CLIENT
+              "SomeTable"
+              {:user/id 1
+               :user/name "Ivan"}
+              {:attrs-get [:test/kek "bar.baz[1]" "abc" "foo"]})
+
+;; the result:
+{:Item {:test/kek "123"
+        :bar {:baz [2]}
+        :abc nil
+        :foo "lol"}}
+```
+
 ### Update Item
 
 ### Delete Item
+
+Simple deletion of an item:
+
+```clojure
+(api/delete-item CLIENT
+                 table
+                 {:user/id 1 :user/name "Ivan"})
+```
+
+Conditional deletion: throws an exception when the expression fails.
+
+```clojure
+(api/put-item CLIENT
+              table
+              {:user/id 1
+               :user/name "Ivan"
+               :test/kek 99})
+
+(api/delete-item CLIENT
+                 table
+                 {:user/id 1 :user/name "Ivan"}
+                 {:sql-condition "#kek in (:foo, :bar, :baz)"
+                  :attr-names {"#kek" :test/kek}
+                  :attr-values {":foo" 1
+                                ":bar" 2
+                                ":baz" 3}})
+```
+
+In the example above, the `"#kek in (:foo, :bar, :baz)"` expression fails as the
+`:test/kek` attribute is of value 99. The item stays in the database, and you'll
+get an exception with ex-info:
+
+```clojure
+{:error? true
+ :status 400
+ :path "com.amazonaws.dynamodb.v20120810"
+ :exception "ConditionalCheckFailedException"
+ :message "The conditional request failed"
+ :payload
+ {:TableName table
+  :Key #:user{:id {:N "1"} :name {:S "Ivan"}}
+  :ConditionExpression "#kek in (:foo, :bar, :baz)"
+  :ExpressionAttributeNames {"#kek" :test/kek}
+  :ExpressionAttributeValues
+  {":foo" {:N "1"} ":bar" {:N "2"} ":baz" {:N "3"}}}
+ :target "DeleteItem"}
+```
 
 ### Query
 
