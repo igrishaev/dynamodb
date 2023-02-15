@@ -304,20 +304,41 @@ for nested maps or lists:
 [faraday]: https://github.com/Taoensso/faraday
 
 This operation is the most complex. In AWS SDK or [Faraday][faraday], to update
-secondary attributes on an item, one should build a SQL expression manually
+secondary attributes of an item, one should build a SQL expression manually
 which involves string formatting, concatenation and similar boring stuff.
 
 ```sql
 SET username = :username, email = :email, ...
 ```
 
-The `ADD`, `DELETE`, and `REMOVE` expression require manual work as
-well. Composing a proper SQL expression out from a map of values is really
-tough.
+The `ADD`, `DELETE`, and `REMOVE` expression require manual work as well.
 
 The present library solves this problem for you. The `update-item` function
-accepts `:add`, `:set`, `:delete`, and `:remove` parameters which are either maps
-or vectors.
+accepts `:add`, `:set`, `:delete`, and `:remove` parameters which are either
+maps or vectors.
+
+#### Set Attributes
+
+```clojure
+(api/update-item CLIENT
+                 table
+                 {:user/id 1
+                  :user/name "Ivan"}
+                 {:attr-names {"#counter" :test/counter}
+                  :attr-values {":one" 1}
+                  :set {"Foobar" 123
+                        :user/email "test@test.com"
+                        "#counter" (api/sql "#counter + :one")}})
+```
+
+The example above covers three various options for the `:set` argument. Namely:
+
+1. The attribute is a plain string `("Foobar")`, and the value is plain as well.
+2. The attribute is a complex keyword (`:user/email`) which cannot be placed in
+   a SQL expression directrly. Unser the hood, the library produces an alias for
+   it.
+3. The
+
 
 ### Delete Item
 
