@@ -20,6 +20,10 @@ dependencies. GraalVM/native-image friendly.
   * [Put Item](#put-item)
   * [Get Item](#get-item)
   * [Update Item](#update-item)
+    + [Set Attributes](#set-attributes)
+    + [Add Attributes](#add-attributes)
+    + [Delete Attributes](#delete-attributes)
+    + [Remove Attributes](#remove-attributes)
   * [Delete Item](#delete-item)
   * [Query](#query)
   * [Scan](#scan)
@@ -335,10 +339,17 @@ The example above covers three various options for the `:set` argument. Namely:
 
 1. The attribute is a plain string `("Foobar")`, and the value is plain as well.
 2. The attribute is a complex keyword (`:user/email`) which cannot be placed in
-   a SQL expression directrly. Unser the hood, the library produces an alias for
-   it.
-3. The
+   a SQL expression directly. Under the hood, the library produces an alias for
+   it and injects into `ExpressionAttributeNames`.
+3. The attribute is an alias, and the value is a raw expression. To distinguish
+   an expression from a regular string (e.g. email), there is a wrapper
+   `api/sql`. The alias `#counter` should be declared in the `:attr-names` map.
 
+#### Add Attributes
+
+#### Delete Attributes
+
+#### Remove Attributes
 
 ### Delete Item
 
