@@ -321,6 +321,10 @@ The present library solves this problem for you. The `update-item` function
 accepts `:add`, `:set`, `:delete`, and `:remove` parameters which are either
 maps or vectors.
 
+The `:sql-condition` argument accepts a plain SQL expression. Should it
+evaluates to falseness, the item won't be affected and you'll get a negative
+response.
+
 #### Set Attributes
 
 ```clojure
@@ -347,9 +351,100 @@ The example above covers three various options for the `:set` argument. Namely:
 
 #### Add Attributes
 
-#### Delete Attributes
+The `:add` parameter accepts a map of an attribute or an alias to a
+value. Imagine you have the following item in the db:
+
+```clojure
+{:user/id 1
+ :user/name "Ivan"
+ :amount 3
+ :test/colors #{"r" "g"}}
+```
+
+To increase the amount and add a new color into the colors set, perfrom:
+
+```clojure
+(api/update-item CLIENT
+                 table
+                 {:user/id 1
+                  :user/name "Ivan"}
+                 {:add {"amount" 1
+                        :test/colors #{"b"}}})
+```
+
+Result:
+
+```clojure
+{:Item
+ {:amount 4
+  :user/id 1
+  :test/colors #{"b" "r" "g"}
+  :user/name "Ivan"}}
+```
 
 #### Remove Attributes
+
+To remove an attribute, pass the `:remove` vector. Each item of that vector is
+either a keyword attribute, or a raw string expression, or an alias.
+
+```clojure
+(api/update-item CLIENT
+                 table
+                 {:user/id 1
+                  :user/name "Ivan"}
+                 {:attr-names {"#kek" :test/kek}
+                  :remove ["#kek" "abc" :test/lol]})
+```
+
+To remove an item from a list, pass a string like this:
+
+```clojure
+;; item in the databalse
+{:tags ["foo" "bar" "baz"]}
+
+{:remove ["tags[1]"]}
+```
+
+Use an alias when the attribute is a keyword with a namespace:
+
+```clojure
+(api/update-item CLIENT
+                 table
+                 {:user/id 1
+                  :user/name "Ivan"}
+                 {:attr-names {"#tags" :user/tags}
+                  :remove ["#tags[1]"]})
+```
+
+#### Delete Attributes
+
+In DynamoDB, the `DELETE` clause is used to remove items from sets. The
+`update-item` function accepts the `:delete` argument which is a map. The key is
+eitehr a keyword or a string alias. The value is always a set:
+
+The item:
+
+```clojure
+{:user/id 1
+ :user/name "Ivan"
+ :user/colors #{"r" "g" "b"}}
+```
+
+API call:
+
+```clojure
+(api/update-item CLIENT
+                 table
+                 {:user/id 1
+                  :user/name "Ivan"}
+                 {:delete {:user/colors #{"r" "b"}}})
+```
+
+Result:
+
+```clojure
+{:Item #:user{:colors #{"g"} :id 1 :name "Ivan"}}
+```
 
 ### Delete Item
 
