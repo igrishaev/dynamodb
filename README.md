@@ -11,6 +11,7 @@ dependencies. GraalVM/native-image friendly.
 
 - [Benefits](#benefits)
 - [Installation](#installation)
+- [Documentation](#documentation)
 - [API Implemented](#api-implemented)
 - [Who Uses It](#who-uses-it)
 - [Usage](#usage)
@@ -22,8 +23,8 @@ dependencies. GraalVM/native-image friendly.
   * [Update Item](#update-item)
     + [Set Attributes](#set-attributes)
     + [Add Attributes](#add-attributes)
-    + [Delete Attributes](#delete-attributes)
     + [Remove Attributes](#remove-attributes)
+    + [Delete Attributes](#delete-attributes)
   * [Delete Item](#delete-item)
   * [Query](#query)
   * [Scan](#scan)
@@ -66,6 +67,12 @@ Clojure CLI/deps.edn:
 ```
 com.github.igrishaev/dynamodb {:mvn/version "0.1.2"}
 ```
+
+## Documentation
+
+[docs]: https://cljdoc.org/d/com.github.igrishaev/dynamodb/0.1.3/doc/readme
+
+[At cljdoc.org][docs] (automatic build).
 
 ## API Implemented
 
@@ -211,7 +218,7 @@ mapping:
 
 ### List Tables
 
-Tables can be listed by pages. The default page size 100. Once you're reached
+Tables can be listed by pages. The default page size is 100. Once you've reached
 the limit, check out the `LastEvaluatedTableName` field. Pass it to the
 `:start-table` optional argument to propagate to the next page:
 
@@ -243,7 +250,7 @@ To upsert an item, pass a map that contains the primary attributes:
 
 Pass `:sql-condition` to make the operation conditional. In the example above,
 the `:user/foo` attribute is 1. The second upsert operation checks if
-`:user/foo` is either 1, or 2, or 3, which is true. Thus, it will fail:
+`:user/foo` is either 1, 2, or 3, which is true. Thus, it will fail:
 
 ```clojure
 (api/put-item CLIENT
@@ -308,21 +315,21 @@ for nested maps or lists:
 [faraday]: https://github.com/Taoensso/faraday
 
 This operation is the most complex. In AWS SDK or [Faraday][faraday], to update
-secondary attributes of an item, one should build a SQL expression manually
-which involves string formatting, concatenation and similar boring stuff.
+an item's secondary attributes, one should manually build a SQL expression that
+involves string formatting, concatenation and similar boring stuff.
 
 ```sql
 SET username = :username, email = :email, ...
 ```
 
-The `ADD`, `DELETE`, and `REMOVE` expression require manual work as well.
+The `ADD`, `DELETE`, and `REMOVE` expressions require manual work as well.
 
 The present library solves this problem for you. The `update-item` function
-accepts `:add`, `:set`, `:delete`, and `:remove` parameters which are either
-maps or vectors.
+accepts `:add`, `:set`, `:delete`, and `:remove` parameters, either maps or
+vectors.
 
 The `:sql-condition` argument accepts a plain SQL expression. Should it
-evaluates to falseness, the item won't be affected and you'll get a negative
+evaluates as falseness, the item won't be affected and you'll get a negative
 response.
 
 #### Set Attributes
@@ -344,7 +351,7 @@ The example above covers three various options for the `:set` argument. Namely:
 1. The attribute is a plain string `("Foobar")`, and the value is plain as well.
 2. The attribute is a complex keyword (`:user/email`) which cannot be placed in
    a SQL expression directly. Under the hood, the library produces an alias for
-   it and injects into `ExpressionAttributeNames`.
+   it and injects it into `ExpressionAttributeNames`.
 3. The attribute is an alias, and the value is a raw expression. To distinguish
    an expression from a regular string (e.g. email), there is a wrapper
    `api/sql`. The alias `#counter` should be declared in the `:attr-names` map.
@@ -385,7 +392,7 @@ Result:
 #### Remove Attributes
 
 To remove an attribute, pass the `:remove` vector. Each item of that vector is
-either a keyword attribute, or a raw string expression, or an alias.
+either a keyword attribute, a raw string expression, or an alias.
 
 ```clojure
 (api/update-item CLIENT
@@ -420,7 +427,7 @@ Use an alias when the attribute is a keyword with a namespace:
 
 In DynamoDB, the `DELETE` clause is used to remove items from sets. The
 `update-item` function accepts the `:delete` argument which is a map. The key is
-eitehr a keyword or a string alias. The value is always a set:
+either a keyword or a string alias. The value is always a set:
 
 The item:
 
@@ -497,9 +504,9 @@ get an exception with ex-info:
 
 ### Query
 
-The Query target allows to seach items that partially match a primary
-key. Imagine the primary key of a table is `:user/id :HASH` and `:user/name
-:RANGE`. Here is what you have in the database:
+The Query target allows searching items that match a primary key partially or
+match some range. Imagine the primary key of a table is `:user/id :HASH` and
+`:user/name :RANGE`. Here is what you have in the database:
 
 ```clojure
 {:user/id 1
@@ -545,7 +552,7 @@ result and pass it into the `:start-key` Query parameter.
 ### Scan
 
 The Scan API goes through the whole table collecting the items that match an
-expression. This is unoptimal yet required sometimes.
+expression. This is not optimal yet required sometimes.
 
 ```clojure
 (api/scan CLIENT
@@ -577,9 +584,9 @@ See the tests, specs, and `dynamodb.api` module for more information.
 
 ## Raw API access
 
-The `api-call` function allows you to interact with DynamoDB on low level. It
-accepts the client, the target name, and a raw payload you'd like send to
-DB. The payload gets sent as-is with no any kind of processing nor interference.
+The `api-call` function allows you to interact with DynamoDB on a low level. It
+accepts the client, the target name, and a raw payload you'd like to send to
+DB. The payload gets sent as-is with no kind of processing or interference.
 
 ```clojure
 (api/api-call CLIENT
@@ -591,10 +598,10 @@ DB. The payload gets sent as-is with no any kind of processing nor interference.
 
 The library provides a number of specs for the API. Find them in the
 `dynamodb.spec` module. It's not imported by default to prevent the binary file
-growing when compiled with GraalVM. That's a known issue when introducing
+from growing when compiled with GraalVM. That's a known issue when introducing
 `clojure.spec` adds +20 Mbs to the file.
 
-Still, those specs are usefull for testing and documentation. Import the specs,
+Still, those specs are useful for testing and documentation. Import the specs,
 then instrument the functions by calling the `instrument` function:
 
 ```clojure
