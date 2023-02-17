@@ -15,6 +15,8 @@ dependencies. GraalVM/native-image friendly.
 - [API Implemented](#api-implemented)
 - [Who Uses It](#who-uses-it)
 - [Usage](#usage)
+  * [Encoding](#encoding)
+  * [Decoding](#decoding)
   * [The Client](#the-client)
   * [Create a Table](#create-a-table)
   * [List Tables](#list-tables)
@@ -47,10 +49,10 @@ dependencies. GraalVM/native-image friendly.
 - Quite narrow dependencies: just [HTTP Kit][http-kit] and [Cheshire][cheshire].
 - Compatible with [Native Image][native-image]! Thus, easy to use as a binary
   file in AWS Lambda.
-- Clojure-friendly: handles attributes with namespaces and builds proper SQL
-  expressions.
+- Clojure-friendly: supports fully qualified keyword attributes and handles
+  properly them in SQL expressions.
 - Both encoding & decoding are extendable with protocols & multimethods.
-- Raw API access for rare cases.
+- Raw API access for special cases.
 - Specs for better input validation.
 - Compatible with [Yandex DB][ydb].
 
@@ -163,6 +165,33 @@ First, import the library:
 
 The `constant` module is needed sometimes to refer to common DynamoDB values
 like `"PAY_PER_REQUEST"`, `"PROVISIONED"` and so on.
+
+### Encoding
+
+The `dynamodb.encode` namespace provides the `IEncode` protocol with the
+`(-encode [this])` method. The library extends the `Boolean`, `String`, `Number`
+and other types to encode them properly. There is also a default implementation
+for `Object` type that encodes any value as a string.
+
+To establish your own encoding rules for some certain type, extend it with
+protocol as follows:
+
+```clojure
+(extend-protocol IEncode
+  MyDateTimeType
+  (-encode [this]
+    (-encode (.milliseconds this))))
+```
+
+In the example above, a custom `MyDateTimeType` type gets transferred into
+milliseconds and gets encoded as a number. Thus, the result will be something
+like `{:N "1676628480718"}`.
+
+### Decoding
+
+At the moment, the values are decoded using the `case` form with no way for
+extension. This a subject to improve/rework this behaviour (see the
+`dynamodb.decode` namespace).
 
 ### The Client
 
