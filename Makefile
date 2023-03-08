@@ -10,13 +10,13 @@ docker-up:
 	docker run -p 8000:8000 amazon/dynamodb-local
 
 lint:
-	clj-kondo --lint .
+	clj-kondo --lint src --lint test
 	lein cljfmt check
 
 lint-fix:
 	lein cljfmt fix
 
-release:
+release: lint
 	lein release
 
 

@@ -1,16 +1,16 @@
 (ns dynamodb.client
   (:require
    [cheshire.core :as json]
-   [dynamodb.sign :as sign]
    [clojure.java.io :as io]
-   [dynamodb.mask :as mask]
+   [dynamodb.sign :as sign]
    [dynamodb.time :as time]
+   [mask.core :as mask]
    [org.httpkit.client :as http])
   (:import
-   dynamodb.mask.Mask
    java.io.InputStream
    java.net.URI
-   java.util.Map))
+   java.util.Map
+   mask.core.Mask))
 
 
 (def defaults

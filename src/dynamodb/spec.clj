@@ -4,7 +4,7 @@
    [clojure.string :as str]
    [dynamodb.api :as api]
    [dynamodb.constant :as const]
-   [dynamodb.mask :as mask]))
+   mask.spec))
 
 
 (s/def ::ne-string
@@ -82,8 +82,8 @@
 ;; Fields
 ;;
 
-(s/def ::access-key mask/masked?)
-(s/def ::secret-key mask/masked?)
+(s/def ::access-key :mask.spec/mask)
+(s/def ::secret-key :mask.spec/mask)
 (s/def ::endpoint   ::ne-string)
 (s/def ::region     ::ne-string)
 

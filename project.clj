@@ -29,7 +29,8 @@
 
   :dependencies
   [[http-kit "2.6.0"]
-   [cheshire "5.10.0"]]
+   [cheshire "5.10.0"]
+   [com.github.igrishaev/mask "0.1.1"]]
 
   :cljfmt
   {:remove-consecutive-blank-lines? false

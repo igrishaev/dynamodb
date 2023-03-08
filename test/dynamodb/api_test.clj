@@ -6,8 +6,8 @@
    [clojure.test :refer [is deftest]]
    [dynamodb.api :as api]
    [dynamodb.constant :as const]
-   [dynamodb.mask :as mask]
-   dynamodb.spec))
+   dynamodb.spec
+   [mask.core :as mask]))
 
 
 (spec.test/instrument)
@@ -57,8 +57,8 @@
           :endpoint "http://localhost:8000/foo"}
          (dissoc CLIENT :access-key :secret-key)))
 
-  (is (-> CLIENT :access-key mask/masked?))
-  (is (-> CLIENT :secret-key mask/masked?))
+  (is (-> CLIENT :access-key mask/mask?))
+  (is (-> CLIENT :secret-key mask/mask?))
 
   (is (= "<< masked >>"
          (pr-str (:secret-key CLIENT)))))
