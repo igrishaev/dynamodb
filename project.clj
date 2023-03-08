@@ -1,4 +1,4 @@
-(defproject com.github.igrishaev/dynamodb "0.1.4"
+(defproject com.github.igrishaev/dynamodb "0.1.5-SNAPSHOT"
 
   :description
   "DynamoDB in pure Clojure. GraalVM-friendly"
