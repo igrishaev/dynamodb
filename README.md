@@ -61,18 +61,18 @@ dependencies. GraalVM/native-image friendly.
 Leiningen/Boot:
 
 ```
-[com.github.igrishaev/dynamodb "0.1.2"]
+[com.github.igrishaev/dynamodb "0.1.4"]
 ```
 
 Clojure CLI/deps.edn:
 
 ```
-com.github.igrishaev/dynamodb {:mvn/version "0.1.2"}
+com.github.igrishaev/dynamodb {:mvn/version "0.1.4"}
 ```
 
 ## Documentation
 
-[docs]: https://cljdoc.org/d/com.github.igrishaev/dynamodb/0.1.3/doc/readme
+[docs]: https://cljdoc.org/d/com.github.igrishaev/dynamodb/0.1.4/doc/readme
 
 [At cljdoc.org][docs] (automatic build).
 
